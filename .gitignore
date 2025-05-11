@@ -3,3 +3,4 @@
 **/__pycache__
 /backend/media
 /backend/configs/.env
+/backend/configs/yolo11n-seg.pt
