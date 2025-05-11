@@ -1,0 +1,38 @@
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from typing import List, Optional
+from datetime import datetime
+from uuid import UUID
+
+class info_file(BaseModel):
+    id_file: UUID
+    token_user: str
+
+class UserBase(BaseModel):
+    id: UUID
+    email: EmailStr
+    is_active: bool
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+class UserAuth(BaseModel):
+    email: EmailStr
+    password: str
+
+class HistoryIdResponseDB(BaseModel):
+    user_id: UUID
+    file_id: UUID
+    created_at: datetime
+    updated_at: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+class HistorFullResponseDB(BaseModel):
+    user_id: UUID
+    file_id: UUID
+    masks: List
+    boxes: List
+    classes: List
+    confs: List
+    created_at: datetime
+    updated_at: datetime
+    model_config = ConfigDict(from_attributes=True)
