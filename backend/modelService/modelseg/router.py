@@ -10,7 +10,7 @@ from backend.dbmodels.crud import add_prediction_to_file, find_file_by_id, get_u
 from backend.configs.config import settings
 from backend.dbmodels.database import db_dependency
 from fastapi import APIRouter, status
-from .utils import processed_prediction, save_predicts_img
+from .utils import processed_prediction
 
 MODEL = None
 

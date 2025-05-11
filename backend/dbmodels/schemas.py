@@ -26,6 +26,9 @@ class HistoryIdResponseDB(BaseModel):
     updated_at: datetime
     model_config = ConfigDict(from_attributes=True)
 
+class AccessToken(BaseModel):
+    at: str
+
 class HistorFullResponseDB(BaseModel):
     user_id: UUID
     file_id: UUID
