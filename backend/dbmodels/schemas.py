@@ -1,5 +1,5 @@
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
-from typing import List, Optional
+from pydantic import BaseModel, ConfigDict, EmailStr
+from typing import List
 from datetime import datetime
 from uuid import UUID
 

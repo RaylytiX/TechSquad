@@ -1,4 +1,4 @@
-from fastapi import Depends, Request
+from fastapi import Request
 from backend.dbmodels.crud import get_user_by_id, get_user_by_email
 from datetime import datetime, timedelta, timezone
 from backend.configs.config import settings

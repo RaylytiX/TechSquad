@@ -1,13 +1,12 @@
 from contextlib import asynccontextmanager
 import os
-from fastapi import BackgroundTasks, Depends, FastAPI
+from fastapi import BackgroundTasks, FastAPI
 from fastapi.responses import JSONResponse
 from PIL import Image
 from ultralytics import YOLO
-from backend.clientService.auth.utils import check_valid_token, get_current_user
-from backend.dbmodels.schemas import UserBase, info_file
+from backend.clientService.auth.utils import check_valid_token
+from backend.dbmodels.schemas import info_file
 from backend.dbmodels.crud import add_prediction_to_file, find_file_by_id, get_user_by_id
-from backend.configs.config import settings
 from backend.dbmodels.database import db_dependency
 from fastapi import APIRouter, status
 from .utils import processed_prediction
@@ -63,7 +62,7 @@ async def get_predict(info: info_file, background_tasks: BackgroundTasks, db: db
         result = MODEL.predict(image)
 
         pred = processed_prediction(result)
-        
+
         background_tasks.add_task(
             add_prediction_to_file,
             file_id=info.id_file,

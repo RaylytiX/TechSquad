@@ -1,9 +1,5 @@
-import json
 import uuid
-from numpy import ndarray
-from sqlalchemy import and_, delete, select, func, update
-from sqlalchemy.orm import selectinload
-
+from sqlalchemy import and_, select, update
 from .schemas import UserBase
 from .models import File, Modelpredict, User
 from .database import db_dependency

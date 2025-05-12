@@ -1,14 +1,12 @@
 from contextlib import asynccontextmanager
 import os
 from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 import uvicorn
-from backend.dbmodels.crud import create_file
-from backend.configs.config import settings
+from fastapi.middleware.cors import CORSMiddleware
 from backend.dbmodels.database import engine, Base
 from .client.router import router as client_router
 from .auth.router import router as auth_router
+from backend.configs.config import settings
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -19,8 +17,17 @@ async def lifespan(app: FastAPI):
     pass
 
 app = FastAPI(title="ClientService", lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins = settings.HOSTS,
+    allow_methods = settings.METHODS,
+    allow_headers = settings.HEADERS,
+    allow_credentials=settings.CREDENTIALS
+)
+
 app.include_router(client_router, tags=["client"])
 app.include_router(auth_router, tags=["auth"])
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="localhost", port=8000)

@@ -1,7 +1,6 @@
 from datetime import datetime
 import uuid
-from fastapi import Request
-from sqlalchemy import UUID, Boolean, Column, Float, Integer, String, ForeignKey, TIMESTAMP, Date, ARRAY
+from sqlalchemy import UUID, Boolean, Column, Float, Integer, String, ForeignKey, TIMESTAMP, ARRAY
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
 from .database import Base

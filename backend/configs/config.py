@@ -20,6 +20,12 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
+    #CORS
+    HOSTS: list = ["http://localhost:5173"]
+    METHODS: list = ["GET", "POST"]
+    HEADERS: list = ["*"]
+    CREDENTIALS: bool = True
+
     model_config = SettingsConfigDict(env_file="backend/configs/.env")
 
-settings = Settings()
+settings = Settings()   
