@@ -5,7 +5,7 @@ import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 from backend.dbmodels.database import engine, Base
 from .client.router import router as client_router
-from .auth.router import router as auth_router
+from .files.router import router as files_router
 from backend.configs.config import settings
 
 @asynccontextmanager
@@ -26,8 +26,9 @@ app.add_middleware(
     allow_credentials=settings.CREDENTIALS
 )
 
-app.include_router(client_router, tags=["client"])
-app.include_router(auth_router, tags=["auth"])
+app.include_router(client_router, tags=["client"], prefix="/client")
+app.include_router(files_router, tags=["client"], prefix="/client")
 
-if __name__ == "__main__":
-    uvicorn.run(app, host="localhost", port=8000)
+
+# if __name__ == "__main__":
+#     uvicorn.run(app, host="0.0.0.0", port=8001)

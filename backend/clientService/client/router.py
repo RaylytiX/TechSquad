@@ -1,16 +1,12 @@
-from typing import List
 import uuid
-from fastapi import APIRouter, BackgroundTasks, File, Form, UploadFile, status
+from fastapi import APIRouter, Form, status
 from fastapi.responses import JSONResponse
-import httpx
-from backend.clientService.auth.utils import get_current_user
-from .utils import save_file
-from backend.dbmodels.crud import create_file, get_history_by_user_file_id, get_history_by_user_id
-from backend.configs.config import settings
+from backend.authService.auth.utils import get_current_user
+from backend.dbmodels.crud import get_history_by_user_file_id, get_history_by_user_id
 from backend.dbmodels.database import db_dependency
 from backend.dbmodels.schemas import HistoryIdResponseDB, HistorFullResponseDB
 
-router = APIRouter(prefix="/client")
+router = APIRouter()
 
 @router.post("/")
 async def personal_account(token: str = Form(...), db: db_dependency=db_dependency):
@@ -91,41 +87,4 @@ async def history(file_id: str, token: str = Form(...), db: db_dependency = db_d
     return JSONResponse(
         status_code=status.HTTP_200_OK, 
         content=response
-    )
-
-@router.post("/predict")
-async def get_predict(background_tasks: BackgroundTasks, files: List[UploadFile] = File(...), token: str = Form(...), db: db_dependency = db_dependency):
-    user = await get_current_user(token=token, db=db)
-    if user is None or not user.is_active:
-        return JSONResponse(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            content={"message": "You are not authenticated"},
-        )
-    dict_predics = {}
-    
-    for file in files:
-        if file.content_type.split('/')[1] not in settings.APPLYLOADFORMATFILE:
-            return JSONResponse(
-                status_code=status.HTTP_404_NOT_FOUND,
-                content={"message": f"Oops! This file {file.filename} is invalid file type, you can upload file with types: {', '.join(settings.APPLYLOADFORMATFILE)}"},
-            )
-
-        path_to_image = await save_file(file=file)
-        result = await create_file(path_to_file=path_to_image, user=user, db=db)
-    
-        async with httpx.AsyncClient() as client:
-            try:
-                response = await client.post(url=settings.API_MODEL+"/model/predict", json={"id_file": str(result.id), "token_user": token})
-                r = response.json()
-            except Exception as e:
-                return JSONResponse(
-                    status_code=response.status_code,
-                    content={"message": f"Sorry service with model is unavailable ({e})"},
-                )
-
-        dict_predics[path_to_image] = r
-
-    return JSONResponse(
-        status_code=status.HTTP_200_OK, 
-        content={"message": dict_predics}
     )

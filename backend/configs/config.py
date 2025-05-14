@@ -9,7 +9,6 @@ class Settings(BaseSettings):
     DB_NAME: str = "postgres"
 
     # Model Segmentation
-    API_MODEL: str = "http://127.0.0.1:8001"
     PATHTOMODEL: str = "yolov11n-seg.pt"
 
     # Images

@@ -1,6 +1,11 @@
 .venv
 .vscode
+.idea
 **/__pycache__
 /backend/media
 /backend/configs/.env
 /backend/configs/yolo11n-seg.pt
+**/Dockerfile
+Dockerfile.base
+docker-compose.yml
+.dockerignore

@@ -4,7 +4,7 @@ from datetime import datetime
 from uuid import UUID
 
 class info_file(BaseModel):
-    id_file: UUID
+    files_id: List[UUID]
     token_user: str
 
 class UserBase(BaseModel):
