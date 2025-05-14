@@ -1,17 +1,16 @@
 import uuid
-from fastapi import APIRouter, Form, status
+from fastapi import APIRouter, Depends, Form, status
 from fastapi.responses import JSONResponse
 from backend.authService.auth.utils import get_current_user
 from backend.dbmodels.crud import get_history_by_user_file_id, get_history_by_user_id
 from backend.dbmodels.database import db_dependency
-from backend.dbmodels.schemas import HistoryIdResponseDB, HistorFullResponseDB
+from backend.dbmodels.schemas import HistoryIdResponseDB, HistorFullResponseDB, UserBase
 
 router = APIRouter()
 
 @router.post("/")
-async def personal_account(token: str = Form(...), db: db_dependency=db_dependency):
-    user = await get_current_user(token=token, db=db)
-    if user is None:
+async def personal_account(user: UserBase = Depends(get_current_user)):
+    if user is None or not user.is_active:
         return JSONResponse(
             status_code=401,
             content={"message": "You are not authenticated"},
@@ -25,9 +24,8 @@ async def personal_account(token: str = Form(...), db: db_dependency=db_dependen
     )
 
 @router.post("/history")
-async def history(token: str = Form(...), db: db_dependency=db_dependency):
-    user = await get_current_user(token=token, db=db)
-    if user is None:
+async def history(user: UserBase = Depends(get_current_user), db: db_dependency=db_dependency):
+    if user is None or not user.is_active:
         return JSONResponse(
             status_code=401,
             content={"message": "You are not authenticated"},
@@ -57,9 +55,8 @@ async def history(token: str = Form(...), db: db_dependency=db_dependency):
     )
 
 @router.post("/history/{file_id}")
-async def history(file_id: str, token: str = Form(...), db: db_dependency = db_dependency):
-    user = await get_current_user(token=token, db=db)
-    if user is None:
+async def history(file_id: str, user: UserBase = Depends(get_current_user), db: db_dependency = db_dependency):
+    if user is None or not user.is_active:
         return JSONResponse(
             status_code=status.HTTP_401_UNAUTHORIZED,
             content={"message": "You are not authenticated"},

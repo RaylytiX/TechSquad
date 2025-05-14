@@ -1,4 +1,4 @@
-from fastapi import Request
+from fastapi import Depends, Request
 from backend.dbmodels.crud import get_user_by_id, get_user_by_email
 from datetime import datetime, timedelta, timezone
 from backend.configs.config import settings
@@ -40,7 +40,7 @@ def get_decode_token(token: str):
         return None
     return payload
 
-def check_valid_token(token: str):
+def check_valid_token(token = Depends(get_access_token)):
     if token is None:
         return token
     
@@ -55,8 +55,7 @@ def check_valid_token(token: str):
         return None
     return decode_token
 
-async def get_current_user(token: str = None, db: db_dependency = db_dependency):
-    payload = check_valid_token(token)
+async def get_current_user(payload: dict = Depends(check_valid_token), db: db_dependency = db_dependency):
     if payload is None:
         return None
 
@@ -70,7 +69,4 @@ async def get_current_user(token: str = None, db: db_dependency = db_dependency)
     if user is None:
         return None
 
-    user = UserBase.model_validate(user)
-
     return user
-

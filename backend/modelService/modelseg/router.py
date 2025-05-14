@@ -1,11 +1,11 @@
 from contextlib import asynccontextmanager
-from fastapi import BackgroundTasks, FastAPI
+from fastapi import BackgroundTasks, Depends, FastAPI
 from fastapi.responses import JSONResponse
 from PIL import Image
 from ultralytics import YOLO
-from backend.authService.auth.utils import check_valid_token
-from backend.dbmodels.schemas import info_file
-from backend.dbmodels.crud import add_prediction_to_file, find_file_by_id, get_user_by_id
+from backend.authService.auth.utils import get_current_user
+from backend.dbmodels.schemas import UserBase, info_file
+from backend.dbmodels.crud import add_prediction_to_file, find_file_by_id
 from backend.dbmodels.database import db_dependency
 from fastapi import APIRouter, status
 from .utils import processed_prediction
@@ -26,15 +26,7 @@ async def lifespan(app: FastAPI):
 router = APIRouter(prefix="/model", lifespan=lifespan)
 
 @router.post("/predict")
-async def get_predict(info: info_file, background_tasks: BackgroundTasks, db: db_dependency = db_dependency):
-    decode_token = check_valid_token(info.token_user)
-    if not decode_token:
-        return JSONResponse(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            content={"message": "Invalid or expired token"},
-        )
-
-    user = await get_user_by_id(id=decode_token.get('sub'), db=db)
+async def get_predict(info: info_file, background_tasks: BackgroundTasks, user: UserBase = Depends(get_current_user), db: db_dependency = db_dependency):
     if not user or not user.is_active:
         return JSONResponse(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -46,6 +38,7 @@ async def get_predict(info: info_file, background_tasks: BackgroundTasks, db: db
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             content={"message": "Model not loaded"},
         )
+    
     dict_predict = {}
     for file in info.files_id:
         try:

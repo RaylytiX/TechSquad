@@ -30,5 +30,5 @@ app.include_router(client_router, tags=["client"], prefix="/client")
 app.include_router(files_router, tags=["client"], prefix="/client")
 
 
-# if __name__ == "__main__":
-#     uvicorn.run(app, host="0.0.0.0", port=8001)
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8001)

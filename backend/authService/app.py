@@ -19,5 +19,5 @@ app.include_router(auth_router, tags=["auth"])
 def root():
     return {"message": "Auth service is up and running"}
 
-# if __name__ == "__main__":
-#     uvicorn.run(app, host="0.0.0.0", port=8002)
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8002)

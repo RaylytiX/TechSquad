@@ -5,7 +5,6 @@ from uuid import UUID
 
 class info_file(BaseModel):
     files_id: List[UUID]
-    token_user: str
 
 class UserBase(BaseModel):
     id: UUID

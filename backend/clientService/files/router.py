@@ -1,9 +1,10 @@
 from typing import List
 
-from fastapi import APIRouter, BackgroundTasks, UploadFile, Form, status
+from fastapi import APIRouter, BackgroundTasks, Depends, UploadFile, Form, status
 from fastapi.responses import JSONResponse
 
 from backend.authService.auth.utils import get_current_user
+from backend.dbmodels.schemas import UserBase
 from .utils import save_file
 from backend.configs.config import settings
 from backend.dbmodels.database import db_dependency
@@ -14,8 +15,7 @@ router = APIRouter()
 
 
 @router.post("/file")
-async def files_upload(background_tasks: BackgroundTasks, files: List[UploadFile], token: str = Form(...), db: db_dependency = db_dependency):
-    user = await get_current_user(token=token, db=db)
+async def files_upload(background_tasks: BackgroundTasks, files: List[UploadFile], user: UserBase = Depends(get_current_user), db: db_dependency = db_dependency):
     if user is None or not user.is_active:
         return JSONResponse(
             status_code=status.HTTP_401_UNAUTHORIZED,
