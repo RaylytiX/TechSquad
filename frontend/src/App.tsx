@@ -8,27 +8,89 @@ import {
 import Login from "./components/Auth/Login";
 import Register from "./components/Auth/Register";
 import Dashboard from "./components/Dashboard/Dashboard";
+import Profile from "./components/Profile/Profile";
 import Header from "./components/Header/Header";
+import axios from "axios";
+
+// Using proxy instead of direct URL
+const API_URL = "";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const token = localStorage.getItem("token");
-  if (!token) {
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        await axios.post(
+          `/client/`,
+          {},
+          {
+            withCredentials: true,
+          }
+        );
+        setIsAuthorized(true);
+      } catch (error: any) {
+        if (error.response && error.response.status === 401) {
+          setIsAuthorized(false);
+        }
+      }
+    };
+
+    checkAuth();
+  }, []);
+
+  if (isAuthorized === null) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        Загрузка...
+      </div>
+    );
+  }
+
+  if (!isAuthorized) {
     return <Navigate to="/login" replace />;
   }
+
   return <>{children}</>;
 };
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    setIsAuthenticated(!!token);
+    const checkAuth = async () => {
+      try {
+        await axios.post(
+          `/client/`,
+          {},
+          {
+            withCredentials: true,
+          }
+        );
+        setIsAuthenticated(true);
+      } catch (error: any) {
+        if (error.response && error.response.status === 401) {
+          setIsAuthenticated(false);
+        } else {
+          setIsAuthenticated(false);
+        }
+      }
+    };
+
+    checkAuth();
   }, []);
 
   const handleAuthChange = (authenticated: boolean) => {
     setIsAuthenticated(authenticated);
   };
+
+  if (isAuthenticated === null) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        Загрузка...
+      </div>
+    );
+  }
 
   return (
     <Router>
@@ -54,11 +116,23 @@ function App() {
             <Routes>
               <Route
                 path="/login"
-                element={<Login onAuthChange={handleAuthChange} />}
+                element={
+                  isAuthenticated ? (
+                    <Navigate to="/dashboard" replace />
+                  ) : (
+                    <Login onAuthChange={handleAuthChange} />
+                  )
+                }
               />
               <Route
                 path="/register"
-                element={<Register onAuthChange={handleAuthChange} />}
+                element={
+                  isAuthenticated ? (
+                    <Navigate to="/dashboard" replace />
+                  ) : (
+                    <Register onAuthChange={handleAuthChange} />
+                  )
+                }
               />
               <Route
                 path="/dashboard"
@@ -68,7 +142,24 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              <Route path="/" element={<Navigate to="/login" replace />} />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/"
+                element={
+                  isAuthenticated ? (
+                    <Navigate to="/dashboard" replace />
+                  ) : (
+                    <Navigate to="/login" replace />
+                  )
+                }
+              />
             </Routes>
           </div>
         </main>
