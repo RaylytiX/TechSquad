@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     METHODS: list = ["GET", "POST"]
     HEADERS: list = ["*"]
     CREDENTIALS: bool = True
-
+    LIMIT_ITEMS_PER_PAGE: int = 10
     model_config = SettingsConfigDict(env_file="backend/configs/.env")
 
 settings = Settings()   
