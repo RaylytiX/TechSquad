@@ -1,8 +1,8 @@
 import uuid
-from fastapi import APIRouter, Depends, Form, status
+from fastapi import APIRouter, Depends, Query, status
 from fastapi.responses import JSONResponse
 from backend.authService.auth.utils import get_current_user
-from backend.dbmodels.crud import get_history_by_user_file_id, get_history_by_user_id
+from backend.dbmodels.crud import get_history_by_user_file_id, get_history_by_user_id_per_page
 from backend.dbmodels.database import db_dependency
 from backend.dbmodels.schemas import HistoryIdResponseDB, HistorFullResponseDB, UserBase
 
@@ -24,14 +24,14 @@ async def personal_account(user: UserBase = Depends(get_current_user)):
     )
 
 @router.post("/history")
-async def history(user: UserBase = Depends(get_current_user), db: db_dependency=db_dependency):
+async def history(page: int = Query(ge=0, default=0), user: UserBase = Depends(get_current_user), db: db_dependency=db_dependency):
     if user is None or not user.is_active:
         return JSONResponse(
             status_code=401,
             content={"message": "You are not authenticated"},
         )
     
-    db_history = await get_history_by_user_id(id=user.id, db=db)
+    db_history, total = await get_history_by_user_id_per_page(id=user.id, page=page, db=db)
     historys = [HistoryIdResponseDB.model_validate(item) for item in db_history]
 
     response = [
@@ -51,7 +51,9 @@ async def history(user: UserBase = Depends(get_current_user), db: db_dependency=
     
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content={"message": response},
+        content={"message": response,
+                 "page":page,
+                 "total_pages":total},
     )
 
 @router.post("/history/{file_id}")

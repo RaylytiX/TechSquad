@@ -1,4 +1,5 @@
 from typing import List
+import uuid
 
 from fastapi import APIRouter, BackgroundTasks, Depends, UploadFile, Form, status
 from fastapi.responses import JSONResponse
@@ -9,10 +10,26 @@ from .utils import save_file
 from backend.configs.config import settings
 from backend.dbmodels.database import db_dependency
 from backend.dbmodels.models import File
-from backend.dbmodels.crud import create_file
+from backend.dbmodels.crud import create_file, find_file_by_id
 
 router = APIRouter()
 
+
+@router.get("/file/{file_id}")
+async def files_upload(file_id: str, background_tasks: BackgroundTasks, user: UserBase = Depends(get_current_user), db: db_dependency = db_dependency):
+    if user is None or not user.is_active:
+        return JSONResponse(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            content={"message": "You are not authenticated"},
+        )
+    
+    file_id = uuid.UUID(file_id)
+    path_to_image = await find_file_by_id(id=file_id, db=db)
+
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={"path": path_to_image}
+    )
 
 @router.post("/file")
 async def files_upload(background_tasks: BackgroundTasks, files: List[UploadFile], user: UserBase = Depends(get_current_user), db: db_dependency = db_dependency):

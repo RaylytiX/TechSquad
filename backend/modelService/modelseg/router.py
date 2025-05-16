@@ -38,34 +38,36 @@ async def get_predict(info: info_file, background_tasks: BackgroundTasks, user: 
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             content={"message": "Model not loaded"},
         )
-    
-    dict_predict = {}
+
+    images_list = []
     for file in info.files_id:
-        try:
-            path_to_image = await find_file_by_id(id=file, db=db)
-            image = Image.open(path_to_image)
-            result = MODEL.predict(image)
+        path_to_image = await find_file_by_id(id=file, db=db)
+        images_list.append(Image.open(path_to_image))
 
-            pred = processed_prediction(result)
-
+    dict_predict = {}
+    try:
+        result = MODEL.predict(images_list)
+        #dict_names = result[0].names
+        for i in range(len(result)):
+            pred = processed_prediction(result[i])
             dict_predict[file.__str__()]= pred
-
             background_tasks.add_task(
                 add_prediction_to_file,
                 file_id=file,
                 user_id=user.id,
                 masks=pred["masks"],
                 boxes=pred["boxes"],
-                classes=pred["classes"],
+                classes=pred["num_classes"],
+                # str_classes=pred["classes"],
                 confs=pred["confs"],
                 db=db
             )
-
-        except Exception as e:
-            return JSONResponse(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                content={"message": f"Prediction failed: {str(e)}"},
-            )
+        # dict_predict["names"] = dict_names
+    except Exception as e:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": f"Prediction failed: {str(e)}"},
+        )
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content=dict_predict

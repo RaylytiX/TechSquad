@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     DB_HOST: str = "localhost"
     DB_PORT: int = 5432
     DB_NAME: str = "postgres"
+    LIMIT_ITEMS_PER_PAGE: int = 10
 
     # Model Segmentation
     PATHTOMODEL: str = "yolov11n-seg.pt"
