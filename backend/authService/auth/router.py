@@ -1,5 +1,5 @@
 from datetime import timedelta
-from fastapi import APIRouter, BackgroundTasks, Depends, Form, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from backend.configs.config import settings
 from backend.dbmodels.crud import change_active, create_user, get_user_by_email
@@ -7,7 +7,7 @@ from .utils import authenticate_user, create_token, get_current_user, get_passwo
 from backend.dbmodels.schemas import UserAuth, UserBase
 from backend.dbmodels.database import db_dependency
 
-router = APIRouter(prefix="/auth")
+router = APIRouter()
 
 @router.post("/login")
 async def login(user_data: UserAuth, background_tasks: BackgroundTasks, db: db_dependency = db_dependency):

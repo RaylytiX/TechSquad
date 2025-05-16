@@ -1,21 +1,17 @@
 from typing import List
 import uuid
-
-from fastapi import APIRouter, BackgroundTasks, Depends, UploadFile, Form, status
+from fastapi import APIRouter, BackgroundTasks, Depends, UploadFile, status
 from fastapi.responses import JSONResponse
-
 from backend.authService.auth.utils import get_current_user
 from backend.dbmodels.schemas import UserBase
 from .utils import save_file
 from backend.configs.config import settings
 from backend.dbmodels.database import db_dependency
-from backend.dbmodels.models import File
 from backend.dbmodels.crud import create_file, find_file_by_id
 
 router = APIRouter()
 
-
-@router.get("/file/{file_id}")
+@router.get("/{file_id}")
 async def get_path_file(file_id: str, background_tasks: BackgroundTasks, user: UserBase = Depends(get_current_user), db: db_dependency = db_dependency):
     if user is None or not user.is_active:
         return JSONResponse(
@@ -31,7 +27,7 @@ async def get_path_file(file_id: str, background_tasks: BackgroundTasks, user: U
         content={"path": path_to_image}
     )
 
-@router.post("/file")
+@router.post("/")
 async def files_upload(background_tasks: BackgroundTasks, files: List[UploadFile], user: UserBase = Depends(get_current_user), db: db_dependency = db_dependency):
     if user is None or not user.is_active:
         return JSONResponse(

@@ -6,7 +6,6 @@ from passlib.context import CryptContext
 import jwt
 from jwt.exceptions import InvalidTokenError
 from backend.dbmodels.database import db_dependency
-from backend.dbmodels.schemas import UserBase
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

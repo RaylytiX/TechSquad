@@ -14,6 +14,7 @@ class Settings(BaseSettings):
 
     # Images
     APPLYLOADFORMATFILE: list = ["png", "jpeg"]
+    FILE_SAVE_FOLDER: str = "frontend/media"
 
     # Auth
     SECRET_KEY: str = "example"

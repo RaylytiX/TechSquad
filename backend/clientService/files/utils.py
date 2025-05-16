@@ -1,8 +1,6 @@
-from typing import List
 import uuid
 import aiofiles
-from fastapi import File, UploadFile
-from fastapi.responses import JSONResponse
+from fastapi import UploadFile
 
 async def save_file(file: UploadFile):
     fileEXT = file.filename.split('.')[-1].lower()

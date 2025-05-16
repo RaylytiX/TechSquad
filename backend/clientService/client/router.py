@@ -1,14 +1,25 @@
 import uuid
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query, status, HTTPException
 from fastapi.responses import JSONResponse
 from backend.authService.auth.utils import get_current_user
 from backend.dbmodels.crud import get_history_by_user_file_id, get_history_by_user_id_per_page
 from backend.dbmodels.database import db_dependency
 from backend.dbmodels.schemas import HistoryIdResponseDB, HistorFullResponseDB, UserBase
+from backend.dbmodels.database import engine
+from sqlalchemy.exc import OperationalError
 
 router = APIRouter()
 
-@router.post("/")
+@router.get("/health")
+async def health_check():
+    try:
+        async with engine.connect() as conn:
+            await conn.execute("SELECT 1")
+        return {"status": "OK", "db": "connected"}
+    except OperationalError:
+        raise HTTPException(status_code=500, detail="Database connection failed")
+
+@router.get("/")
 async def personal_account(user: UserBase = Depends(get_current_user)):
     if user is None or not user.is_active:
         return JSONResponse(
@@ -23,7 +34,7 @@ async def personal_account(user: UserBase = Depends(get_current_user)):
             "created_at": user.created_at.strftime("%d.%m.%Y %H:%M:%S")},
     )
 
-@router.post("/history")
+@router.get("/history")
 async def history(page: int = Query(ge=0, default=0), user: UserBase = Depends(get_current_user), db: db_dependency=db_dependency):
     if user is None or not user.is_active:
         return JSONResponse(
@@ -56,7 +67,7 @@ async def history(page: int = Query(ge=0, default=0), user: UserBase = Depends(g
                  "total_pages":total},
     )
 
-@router.post("/history/{file_id}")
+@router.get("/history/{file_id}")
 async def history(file_id: str, user: UserBase = Depends(get_current_user), db: db_dependency = db_dependency):
     if user is None or not user.is_active:
         return JSONResponse(

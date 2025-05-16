@@ -23,7 +23,7 @@ async def lifespan(app: FastAPI):
     yield
     del MODEL
 
-router = APIRouter(prefix="/model", lifespan=lifespan)
+router = APIRouter(lifespan=lifespan)
 
 @router.post("/predict")
 async def get_predict(info: info_file, background_tasks: BackgroundTasks, user: UserBase = Depends(get_current_user), db: db_dependency = db_dependency):
