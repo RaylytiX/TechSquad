@@ -10,7 +10,7 @@ from backend.configs.config import settings
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    os.makedirs('backend/media', exist_ok=True)
+    os.makedirs('frontend/media', exist_ok=True)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     yield
