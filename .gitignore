@@ -2,7 +2,7 @@
 .vscode
 .idea
 **/__pycache__
-/backend/media
+**/media
 /backend/configs/.env
 /backend/configs/yolo11n-seg.pt
 **/Dockerfile
