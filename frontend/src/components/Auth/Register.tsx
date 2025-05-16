@@ -1,15 +1,21 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AuthNav from "./AuthNav";
 
-const API_URL = `${import.meta.env.VITE_API_URL}/auth/signup`;
 
-const Register = () => {
+const API_URL = `/auth/signup`;
+
+interface RegisterProps {
+  onAuthChange: (authenticated: boolean) => void;
+}
+
+const Register: React.FC<RegisterProps> = ({ onAuthChange }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -18,6 +24,10 @@ const Register = () => {
       setError("Пароли не совпадают");
       return;
     }
+
+    setIsLoading(true);
+    setError("");
+
     try {
       const response = await axios.post(
         API_URL,
@@ -34,12 +44,14 @@ const Register = () => {
         }
       );
 
-      if (response.data.access_token) {
-        localStorage.setItem("token", response.data.access_token);
-        navigate("/login");
+      if (response.status === 201) {
+        onAuthChange(true);
+        navigate("/dashboard");
       }
     } catch (err: any) {
       setError(err.response?.data?.detail || "Регистрация не удалась");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -71,6 +83,7 @@ const Register = () => {
                 placeholder="Адрес электронной почты"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
               />
             </div>
             <div>
@@ -86,6 +99,7 @@ const Register = () => {
                 placeholder="Пароль"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading}
               />
             </div>
             <div>
@@ -101,6 +115,7 @@ const Register = () => {
                 placeholder="Подтвердите пароль"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                disabled={isLoading}
               />
             </div>
           </div>
@@ -108,9 +123,10 @@ const Register = () => {
           <div>
             <button
               type="submit"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+              disabled={isLoading}
             >
-              Зарегистрироваться
+              {isLoading ? "Регистрация..." : "Зарегистрироваться"}
             </button>
           </div>
         </form>

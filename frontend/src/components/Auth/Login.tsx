@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AuthNav from "./AuthNav";
 
-const API_URL = `${import.meta.env.VITE_API_URL}/auth/login`;
+
+const API_URL = `/auth/login`;
 
 interface LoginProps {
   onAuthChange: (authenticated: boolean) => void;
@@ -40,8 +41,7 @@ const Login: React.FC<LoginProps> = ({ onAuthChange }) => {
 
       console.log("Ответ сервера:", response.data);
 
-      if (response.data.access_token) {
-        localStorage.setItem("token", response.data.access_token);
+      if (response.status === 200) {
         onAuthChange(true);
         navigate("/dashboard");
       } else {
