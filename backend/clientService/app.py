@@ -29,7 +29,7 @@ app.add_middleware(
 
 app.include_router(health_router, tags=["health"], prefix="/ping")
 app.include_router(client_router, tags=["client"], prefix="/client")
-app.include_router(files_router, tags=["file"], prefix="/file")
+app.include_router(files_router, tags=["file"], prefix="/client/file")
 
 
 if __name__ == "__main__":
