@@ -42,6 +42,8 @@ async def find_file_by_id(id: uuid, db: db_dependency):
     db_file = await db.execute(statement=stmt)
     await db.close()
     result = db_file.scalar_one_or_none()
+    if result is None:
+        return None
     return result.path_to_file
 
 async def create_file(path_to_file: str, user: UserBase, db: db_dependency):
