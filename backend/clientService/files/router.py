@@ -21,6 +21,11 @@ async def get_path_file(file_id: str, background_tasks: BackgroundTasks, user: U
     
     file_id = uuid.UUID(file_id)
     path_to_image = await find_file_by_id(id=file_id, db=db)
+    if path_to_image is None:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={"path": "We didn`t find file"}
+        )
 
     return JSONResponse(
         status_code=status.HTTP_200_OK,
