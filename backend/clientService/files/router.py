@@ -16,7 +16,7 @@ router = APIRouter()
 
 
 @router.get("/file/{file_id}")
-async def files_upload(file_id: str, background_tasks: BackgroundTasks, user: UserBase = Depends(get_current_user), db: db_dependency = db_dependency):
+async def get_path_file(file_id: str, background_tasks: BackgroundTasks, user: UserBase = Depends(get_current_user), db: db_dependency = db_dependency):
     if user is None or not user.is_active:
         return JSONResponse(
             status_code=status.HTTP_401_UNAUTHORIZED,
