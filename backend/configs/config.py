@@ -13,8 +13,8 @@ class Settings(BaseSettings):
     PATHTOMODEL: str = ""
 
     # Images
-    APPLYLOADFORMATFILE: list = [""]
-    FILE_SAVE_FOLDER: str = ""
+    APPLYLOADFORMATFILE: list = ["png", "jpeg"]
+    FILE_SAVE_FOLDER: str = "frontend/media"
 
     # Auth
     SECRET_KEY: str = ""
@@ -29,4 +29,4 @@ class Settings(BaseSettings):
     LIMIT_ITEMS_PER_PAGE: int = 0
     model_config = SettingsConfigDict(env_file="configs/.env")
 
-settings = Settings()
+settings = Settings()   
