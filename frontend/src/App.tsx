@@ -96,8 +96,8 @@ function App() {
         <main className={isAuthenticated ? "pt-6" : ""}>
           {!isAuthenticated && (
             <div className="flex flex-col items-center mb-8 pt-8">
-              <div className="w-20 h-20 mb-4 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg">
-                <span className="text-white text-2xl font-bold select-none">
+              <div className="w-15 h-15 mb-3 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg">
+                <span className="text-white text-5xl font-bold select-none">
                   R
                 </span>
               </div>
