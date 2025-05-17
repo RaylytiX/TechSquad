@@ -205,7 +205,7 @@ const Dashboard: React.FC = () => {
     formData.append("files", selectedFile);
 
     try {
-      const uploadResponse = await axios.post(`${CLIENT_URL}/file`, formData, {
+      const uploadResponse = await axios.post(`${CLIENT_URL}/file/`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -243,15 +243,6 @@ const Dashboard: React.FC = () => {
             const mediaFormData = new FormData();
             mediaFormData.append("file", selectedFile);
             mediaFormData.append("file_id", fileId);
-
-            await axios.post(`${CLIENT_URL}/save_image`, mediaFormData, {
-              headers: {
-                "Content-Type": "multipart/form-data",
-              },
-              withCredentials: true,
-            });
-
-            console.log("Изображение успешно сохранено для истории:", fileId);
           } catch (saveErr) {
             console.error("Ошибка при сохранении изображения:", saveErr);
           }
