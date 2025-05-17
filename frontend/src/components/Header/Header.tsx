@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 
-
 const CLIENT_URL = `/client`;
 const AUTH_URL = `/auth`;
 
@@ -15,16 +14,11 @@ const Header: React.FC<HeaderProps> = ({ onAuthChange }) => {
   const [userEmail, setUserEmail] = useState<string>("");
 
   useEffect(() => {
-
     const fetchUserInfo = async () => {
       try {
-        const response = await axios.post(
-          `${CLIENT_URL}/`,
-          {},
-          {
-            withCredentials: true,
-          }
-        );
+        const response = await axios.get(`${CLIENT_URL}/`, {
+          withCredentials: true,
+        });
         if (response.data && response.data.email) {
           setUserEmail(response.data.email);
         }
@@ -62,11 +56,11 @@ const Header: React.FC<HeaderProps> = ({ onAuthChange }) => {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-4">
             <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center shadow-md">
-              <span className="text-white text-lg font-bold select-none">
-                TS
+              <span className="text-white text-2xl font-bold select-none">
+                R
               </span>
             </div>
-            <h1 className="text-xl font-semibold text-gray-900">TechSquad</h1>
+            <h1 className="text-xl font-semibold text-gray-900">RaylytiX</h1>
           </div>
 
           <div className="flex items-center space-x-4">
