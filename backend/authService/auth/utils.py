@@ -1,11 +1,11 @@
 from fastapi import Depends, Request
-from backend.dbmodels.crud import get_user_by_id, get_user_by_email
+from dbmodels.crud import get_user_by_id, get_user_by_email
 from datetime import datetime, timedelta, timezone
-from backend.configs.config import settings
+from configs.config import settings
 from passlib.context import CryptContext
 import jwt
 from jwt.exceptions import InvalidTokenError
-from backend.dbmodels.database import db_dependency
+from dbmodels.database import db_dependency
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

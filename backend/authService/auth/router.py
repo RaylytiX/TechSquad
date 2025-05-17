@@ -1,11 +1,11 @@
 from datetime import timedelta
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
-from backend.configs.config import settings
-from backend.dbmodels.crud import change_active, create_user, get_user_by_email
+from configs.config import settings
+from dbmodels.crud import change_active, create_user, get_user_by_email
 from .utils import authenticate_user, create_token, get_current_user, get_password_hash
-from backend.dbmodels.schemas import UserAuth, UserBase
-from backend.dbmodels.database import db_dependency
+from dbmodels.schemas import UserAuth, UserBase
+from dbmodels.database import db_dependency
 
 router = APIRouter()
 

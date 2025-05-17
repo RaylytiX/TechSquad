@@ -3,13 +3,13 @@ from fastapi import BackgroundTasks, Depends, FastAPI
 from fastapi.responses import JSONResponse
 from PIL import Image
 from ultralytics import YOLO
-from backend.authService.auth.utils import get_current_user
-from backend.dbmodels.schemas import UserBase, info_file
-from backend.dbmodels.crud import add_prediction_to_file, find_file_by_id
-from backend.dbmodels.database import db_dependency
+from authService.auth.utils import get_current_user
+from dbmodels.schemas import UserBase, info_file
+from dbmodels.crud import add_prediction_to_file, find_file_by_id
+from dbmodels.database import db_dependency
 from fastapi import APIRouter, status
 from .utils import processed_prediction
-from backend.configs.config import settings
+from configs.config import settings
 
 MODEL = None
 
@@ -47,7 +47,8 @@ async def get_predict(info: info_file, background_tasks: BackgroundTasks, user: 
     dict_predict = {}
     try:
         result = MODEL.predict(images_list)
-        #dict_names = result[0].names
+        # print(result[0])
+        # result[0].show()
         for i in range(len(result)):
             pred = processed_prediction(result[i])
             dict_predict[file.__str__()]= pred

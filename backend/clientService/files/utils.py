@@ -1,7 +1,7 @@
 import uuid
 import aiofiles
 from fastapi import UploadFile
-from backend.configs.config import settings
+from configs.config import settings
 
 async def save_file(file: UploadFile):
     fileEXT = file.filename.split('.')[-1].lower()

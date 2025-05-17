@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, status
-from backend.dbmodels.database import engine
+from dbmodels.database import engine
 from sqlalchemy.exc import OperationalError
 from sqlalchemy import select
 

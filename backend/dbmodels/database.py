@@ -2,7 +2,7 @@ from typing import Annotated
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine, AsyncSession
 from sqlalchemy.ext.declarative import declarative_base
-from backend.configs.config import settings
+from configs.config import settings
 
 DATABASE_URL = f'postgresql+asyncpg://{settings.DB_USER}:{settings.DB_PASSWORD}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}'
 engine = create_async_engine(DATABASE_URL)#, echo=True)

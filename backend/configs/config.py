@@ -2,31 +2,31 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     # Database
-    DB_USER: str = "postgres"
+    DB_USER: str = ""
     DB_PASSWORD: str = ""
-    DB_HOST: str = "localhost"
-    DB_PORT: int = 5432
-    DB_NAME: str = "postgres"
-    LIMIT_ITEMS_PER_PAGE: int = 10
+    DB_HOST: str = ""
+    DB_PORT: int = 0
+    DB_NAME: str = ""
+    LIMIT_ITEMS_PER_PAGE: int = 0
 
     # Model Segmentation
-    PATHTOMODEL: str = "yolov11n-seg.pt"
+    PATHTOMODEL: str = ""
 
     # Images
-    APPLYLOADFORMATFILE: list = ["png", "jpeg"]
-    FILE_SAVE_FOLDER: str = "frontend/media"
+    APPLYLOADFORMATFILE: list = [""]
+    FILE_SAVE_FOLDER: str = ""
 
     # Auth
-    SECRET_KEY: str = "example"
-    ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    SECRET_KEY: str = ""
+    ALGORITHM: str = ""
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 0
 
-    #CORS
-    HOSTS: list = ["http://localhost:5173"]
-    METHODS: list = ["GET", "POST"]
-    HEADERS: list = ["*"]
-    CREDENTIALS: bool = True
-    LIMIT_ITEMS_PER_PAGE: int = 10
-    model_config = SettingsConfigDict(env_file="backend/configs/.env")
+    # CORS
+    HOSTS: list = [""]
+    METHODS: list = [""]
+    HEADERS: list = [""]
+    CREDENTIALS: bool = False
+    LIMIT_ITEMS_PER_PAGE: int = 0
+    model_config = SettingsConfigDict(env_file="configs/.env")
 
-settings = Settings()   
+settings = Settings()

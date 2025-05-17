@@ -3,11 +3,11 @@ import os
 from fastapi import FastAPI
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
-from backend.dbmodels.database import engine, Base
+from dbmodels.database import engine, Base
 from .client.router import router as client_router
 from .files.router import router as files_router
 from .healthcheckerclient import router as health_router
-from backend.configs.config import settings
+from configs.config import settings
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

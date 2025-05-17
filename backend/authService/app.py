@@ -1,9 +1,9 @@
 from fastapi import FastAPI
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
-from backend.authService.auth.router import router as auth_router
+from authService.auth.router import router as auth_router
 from .healthcheckercauth import router as health_router
-from backend.configs.config import settings
+from configs.config import settings
 
 app = FastAPI(title="AuthService")
 

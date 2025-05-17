@@ -2,12 +2,12 @@ from typing import List
 import uuid
 from fastapi import APIRouter, BackgroundTasks, Depends, UploadFile, status
 from fastapi.responses import JSONResponse
-from backend.authService.auth.utils import get_current_user
-from backend.dbmodels.schemas import UserBase
+from authService.auth.utils import get_current_user
+from dbmodels.schemas import UserBase
 from .utils import save_file
-from backend.configs.config import settings
-from backend.dbmodels.database import db_dependency
-from backend.dbmodels.crud import create_file, find_file_by_id
+from configs.config import settings
+from dbmodels.database import db_dependency
+from dbmodels.crud import create_file, find_file_by_id
 
 router = APIRouter()
 

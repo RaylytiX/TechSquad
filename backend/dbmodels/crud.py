@@ -5,36 +5,36 @@ from sqlalchemy import and_, delete, func, select, update
 from .schemas import UserBase
 from .models import File, Modelpredict, User
 from .database import db_dependency
-from backend.configs.config import settings
+from configs.config import settings
 
-def cleanup_old_predictions(model, user_id_kwarg="id", db_kwarg="db", max_count=1000, delete_count=500):
-    def decorator(func):
-        @wraps(func)
-        async def wrapper(*args, **kwargs):
-            db = kwargs.get(db_kwarg)
-            user_id = kwargs.get(user_id_kwarg)
+# def cleanup_old_predictions(model, user_id_kwarg="id", db_kwarg="db", max_count=1000, delete_count=500):
+#     def decorator(func):
+#         @wraps(func)
+#         async def wrapper(*args, **kwargs):
+#             db = kwargs.get(db_kwarg)
+#             user_id = kwargs.get(user_id_kwarg)
 
-            if db is None or user_id is None:
-                raise ValueError(f"Decorator requires kwargs '{db_kwarg}' (session) and '{user_id_kwarg}' (user_id)")
-            count_stmt = select(func.count()).where(model.user_id == user_id)
-            result = await db.execute(count_stmt)
-            total = result.scalar_one()
+#             if db is None or user_id is None:
+#                 raise ValueError(f"Decorator requires kwargs '{db_kwarg}' (session) and '{user_id_kwarg}' (user_id)")
+#             count_stmt = select(func.count()).where(model.user_id == user_id)
+#             result = await db.execute(count_stmt)
+#             total = result.scalar_one()
 
-            if total > max_count:
-                subq = (
-                    select(model.id)
-                    .where(model.user_id == user_id)
-                    .order_by(model.created_at.asc())
-                    .limit(delete_count)
-                    .subquery()
-                )
+#             if total > max_count:
+#                 subq = (
+#                     select(model.id)
+#                     .where(model.user_id == user_id)
+#                     .order_by(model.created_at.asc())
+#                     .limit(delete_count)
+#                     .subquery()
+#                 )
 
-                delete_stmt = delete(model).where(model.id.in_(select(subq.c.id)))
-                await db.execute(delete_stmt)
-                await db.commit()
-            return await func(*args, **kwargs)
-        return wrapper
-    return decorator
+#                 delete_stmt = delete(model).where(model.id.in_(select(subq.c.id)))
+#                 await db.execute(delete_stmt)
+#                 await db.commit()
+#             return await func(*args, **kwargs)
+#         return wrapper
+#     return decorator
 
 async def find_file_by_id(id: uuid, db: db_dependency):
     stmt = select(File).where(File.id == id)
@@ -76,34 +76,34 @@ async def create_user(email: str, hashed_password: str, active: bool, db: db_dep
     await db.close()
     return db_user
 
-def cleanup_old_predictions(model, user_id_kwarg="id", db_kwarg="db", max_count=1000, delete_count=500):
-    def decorator(target_func):
-        @wraps(target_func)
-        async def wrapper(*args, **kwargs):
-            db = kwargs.get(db_kwarg)
-            user_id = kwargs.get(user_id_kwarg)
+# def cleanup_old_predictions(model, user_id_kwarg="id", db_kwarg="db", max_count=1000, delete_count=500):
+#     def decorator(target_func):
+#         @wraps(target_func)
+#         async def wrapper(*args, **kwargs):
+#             db = kwargs.get(db_kwarg)
+#             user_id = kwargs.get(user_id_kwarg)
 
-            if db is None or user_id is None:
-                raise ValueError(f"Decorator requires kwargs '{db_kwarg}' (session) and '{user_id_kwarg}' (user_id)")
-            count_stmt = select(func.count()).where(model.user_id == user_id)
-            result = await db.execute(count_stmt)
-            total = result.scalar_one()
+#             if db is None or user_id is None:
+#                 raise ValueError(f"Decorator requires kwargs '{db_kwarg}' (session) and '{user_id_kwarg}' (user_id)")
+#             count_stmt = select(func.count()).where(model.user_id == user_id)
+#             result = await db.execute(count_stmt)
+#             total = result.scalar_one()
 
-            if total > max_count:
-                subq = (
-                    select(model.id)
-                    .where(model.user_id == user_id)
-                    .order_by(model.created_at.asc())
-                    .limit(delete_count)
-                    .subquery()
-                )
+#             if total > max_count:
+#                 subq = (
+#                     select(model.id)
+#                     .where(model.user_id == user_id)
+#                     .order_by(model.created_at.asc())
+#                     .limit(delete_count)
+#                     .subquery()
+#                 )
 
-                delete_stmt = delete(model).where(model.id.in_(select(subq.c.id)))
-                await db.execute(delete_stmt)
-                await db.commit()
-            return await target_func(*args, **kwargs)
-        return wrapper
-    return decorator
+#                 delete_stmt = delete(model).where(model.id.in_(select(subq.c.id)))
+#                 await db.execute(delete_stmt)
+#                 await db.commit()
+#             return await target_func(*args, **kwargs)
+#         return wrapper
+#     return decorator
 
 #@cleanup_old_predictions(model=Modelpredict, user_id_kwarg="user_id", db_kwarg="db")
 async def add_prediction_to_file(file_id: uuid, 
