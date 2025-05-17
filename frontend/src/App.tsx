@@ -97,12 +97,12 @@ function App() {
           {!isAuthenticated && (
             <div className="flex flex-col items-center mb-8 pt-8">
               <div className="w-20 h-20 mb-4 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg">
-                <span className="text-white text-4xl font-bold select-none">
-                  TS
+                <span className="text-white text-2xl font-bold select-none">
+                  R
                 </span>
               </div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                TechSquad
+                RaylytiX
               </h1>
               <p className="text-gray-500 text-center text-sm">
                 Добро пожаловать!
