@@ -1,37 +1,31 @@
 import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 
-// Using proxy instead of direct URLs
 const CLIENT_URL = `/client`;
 const MODEL_URL = `/model`;
 
-// Function to generate colors for class names
 const generateClassColors = (classes: string[]) => {
-  // Get unique classes
   const uniqueClasses = [...new Set(classes)];
 
-  // Predefined colors array for better visibility
   const colors = [
-    "#FF0000", // Red
-    "#0000FF", // Blue
-    "#FFFF00", // Yellow
-    "#00FF00", // Green
-    "#FF00FF", // Magenta
-    "#00FFFF", // Cyan
-    "#FFA500", // Orange
-    "#800080", // Purple
-    "#008000", // Dark Green
-    "#FFC0CB", // Pink
+    "#FF0000",
+    "#0000FF",
+    "#FFFF00",
+    "#00FF00",
+    "#FF00FF",
+    "#00FFFF",
+    "#FFA500",
+    "#800080",
+    "#008000",
+    "#FFC0CB",
   ];
 
-  // Create a mapping of class names to colors
   const classColorMap: Record<string, string> = {};
 
   uniqueClasses.forEach((className, index) => {
     if (index < colors.length) {
       classColorMap[className] = colors[index];
     } else {
-      // If we need more colors than in the predefined array, generate random ones
       classColorMap[className] = `#${Math.floor(Math.random() * 16777215)
         .toString(16)
         .padStart(6, "0")}`;
@@ -66,10 +60,8 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // Generate colors when analysis result changes
   useEffect(() => {
     if (analysisResult && analysisResult.classes) {
-      // Generate color map based on class names
       const colorMap = generateClassColors(analysisResult.classes);
       setClassColors(colorMap);
     }
@@ -106,7 +98,6 @@ const Dashboard: React.FC = () => {
 
       ctx.drawImage(img, 0, 0, img.width, img.height);
 
-      // Draw masks first (so boxes appear on top)
       if (
         showMasks &&
         analysisResult.masks &&
@@ -118,9 +109,8 @@ const Dashboard: React.FC = () => {
             analysisResult.classes &&
             index < analysisResult.classes.length
           ) {
-            // Get color based on the class name
             const className = analysisResult.classes[index];
-            const color = classColors[className] || "#FF0000"; // Default to red if class not found
+            const color = classColors[className] || "#FF0000";
 
             const rgbaFill = color
               .replace("#", "rgba(")
@@ -160,7 +150,6 @@ const Dashboard: React.FC = () => {
         });
       }
 
-      // Draw boxes on top
       if (showBoxes && analysisResult.boxes) {
         analysisResult.boxes.forEach((box: number[], index: number) => {
           if (analysisResult.classes && index < analysisResult.classes.length) {
@@ -169,9 +158,8 @@ const Dashboard: React.FC = () => {
             const width = box[2] - box[0];
             const height = box[3] - box[1];
 
-            // Get color based on the class name
             const className = analysisResult.classes[index];
-            const color = classColors[className] || "#FF0000"; // Default to red if class not found
+            const color = classColors[className] || "#FF0000";
 
             ctx.strokeStyle = color;
             ctx.lineWidth = 2;
@@ -180,7 +168,7 @@ const Dashboard: React.FC = () => {
             if (analysisResult.classes && analysisResult.confs) {
               const confidence = analysisResult.confs[index];
 
-              ctx.fillStyle = color + "B3"; // Add some transparency (70%)
+              ctx.fillStyle = color + "B3";
               ctx.fillRect(x, y - 20, 100, 20);
               ctx.fillStyle = "white";
               ctx.font = "12px Arial";
@@ -251,14 +239,11 @@ const Dashboard: React.FC = () => {
         if (predictResponse.data[fileId]) {
           setAnalysisResult(predictResponse.data[fileId]);
 
-          // Сохраняем изображение в директорию media
           try {
-            // Копируем файл в директорию media с именем равным fileId
             const mediaFormData = new FormData();
             mediaFormData.append("file", selectedFile);
             mediaFormData.append("file_id", fileId);
 
-            // Отправляем запрос на сохранение изображения
             await axios.post(`${CLIENT_URL}/save_image`, mediaFormData, {
               headers: {
                 "Content-Type": "multipart/form-data",
@@ -408,7 +393,7 @@ const Dashboard: React.FC = () => {
                   {/* Showing unique classes with their colors */}
                   {Object.keys(classColors).map((className, index) => {
                     const color = classColors[className];
-                    // Count objects of this class
+
                     const count = analysisResult.classes.filter(
                       (c: string) => c === className
                     ).length;

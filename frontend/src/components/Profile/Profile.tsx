@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 
-// Обновлены URL для соответствия новой структуре API
 const CLIENT_URL = `/client`;
 const FILE_URL = `/file`;
 
@@ -49,7 +48,6 @@ const Profile: React.FC = () => {
   const fetchUserData = async () => {
     setIsLoading(true);
     try {
-      // Fetch user info
       const userResponse = await axios.get(`${CLIENT_URL}/`, {
         withCredentials: true,
       });
@@ -58,7 +56,6 @@ const Profile: React.FC = () => {
         setUserInfo(userResponse.data);
       }
 
-      // Fetch user history with pagination
       await fetchHistoryPage(0);
     } catch (err: any) {
       console.error("Error fetching user data:", err);
@@ -87,7 +84,6 @@ const Profile: React.FC = () => {
           setHistory(historyResponse.data.message);
         }
 
-        // Update pagination data
         setCurrentPage(historyResponse.data.page || 0);
         setTotalPages(historyResponse.data.total_pages || 1);
 
@@ -115,12 +111,10 @@ const Profile: React.FC = () => {
   useEffect(() => {
     fetchUserData();
 
-    // Set up interval to refresh history every 10 seconds
     const intervalId = setInterval(() => {
       refreshHistory();
     }, 10000);
 
-    // Clean up interval on component unmount
     return () => clearInterval(intervalId);
   }, []);
 
@@ -138,12 +132,10 @@ const Profile: React.FC = () => {
       console.log("Image path response:", response.data);
 
       if (response.data && response.data.path) {
-        // Extract filename from backend path
         const filename = response.data.path.split("/").pop();
         console.log("Extracted filename:", filename);
 
         if (filename) {
-          // Прямой путь к файлу в public/media
           const imagePath = `../public/media/${filename}`;
           console.log("Setting image path to:", imagePath);
           setImagePath(imagePath);
@@ -186,14 +178,11 @@ const Profile: React.FC = () => {
 
     const img = debugImageRef.current;
 
-    // Set canvas dimensions to match the image
     canvas.width = img.width;
     canvas.height = img.height;
 
-    // Draw the original image on the canvas
     ctx.drawImage(img, 0, 0, img.width, img.height);
 
-    // Draw masks if enabled and available
     if (
       showMasks &&
       selectedHistory.masks &&
@@ -206,9 +195,8 @@ const Profile: React.FC = () => {
           selectedHistory.classes &&
           index < selectedHistory.classes.length
         ) {
-          // Generate a color based on the class
           const classIdx = selectedHistory.classes[index];
-          const hue = (classIdx * 137) % 360; // Use prime number for better distribution
+          const hue = (classIdx * 137) % 360;
           const color = `hsl(${hue}, 70%, 50%)`;
           const rgbaFill = `hsla(${hue}, 70%, 50%, 0.3)`;
           const rgbaBorder = `hsla(${hue}, 70%, 50%, 0.8)`;
@@ -230,7 +218,6 @@ const Profile: React.FC = () => {
       });
     }
 
-    // Draw boxes if enabled and available
     if (
       showBoxes &&
       selectedHistory.boxes &&
@@ -244,7 +231,6 @@ const Profile: React.FC = () => {
           const width = box[2] - box[0];
           const height = box[3] - box[1];
 
-          // Use the same color as the corresponding mask
           const classIdx = selectedHistory.classes[index];
           const hue = (classIdx * 137) % 360;
           const color = `hsl(${hue}, 70%, 50%)`;
@@ -255,7 +241,7 @@ const Profile: React.FC = () => {
 
           if (selectedHistory.classes && selectedHistory.confs) {
             const confidence = selectedHistory.confs[index];
-            // Use class names from our mapping function
+
             const className = getClassName(classIdx);
 
             ctx.fillStyle = color;
@@ -277,7 +263,6 @@ const Profile: React.FC = () => {
     console.log("Canvas drawing completed");
   };
 
-  // Redraw when toggle state changes
   useEffect(() => {
     if (debugImageLoaded && selectedHistory) {
       drawResultsOnCanvas();
@@ -286,12 +271,10 @@ const Profile: React.FC = () => {
 
   const fetchHistoryDetails = async (fileId: string) => {
     try {
-      // Очищаем предыдущие данные перед загрузкой новых
       setSelectedHistory(null);
       setImagePath(null);
       setDebugImageLoaded(false);
 
-      // Запрашиваем детали истории
       const response = await axios.get(`${CLIENT_URL}/history/${fileId}`, {
         withCredentials: true,
       });
@@ -299,7 +282,6 @@ const Profile: React.FC = () => {
       if (response.data) {
         setSelectedHistory(response.data);
 
-        // Additionally fetch the image path
         await fetchImagePath(fileId);
       }
     } catch (err: any) {
@@ -314,9 +296,7 @@ const Profile: React.FC = () => {
     }
   };
 
-  // Helper function to get class names based on class ID
   const getClassName = (classId: number): string => {
-    // Mapping of class IDs to actual class names from COCO dataset
     const classMapping: { [key: number]: string } = {
       0: "person",
       1: "bicycle",
@@ -358,7 +338,6 @@ const Profile: React.FC = () => {
       37: "surfboard",
       38: "tennis racket",
       39: "bottle",
-      // Добавьте остальные классы по необходимости
     };
 
     return classMapping[classId] || `class ${classId}`;
@@ -625,7 +604,7 @@ const Profile: React.FC = () => {
                     className="hidden"
                     onError={(e) => {
                       console.error("Error loading image:", e);
-                      // Try alternative path if image fails to load
+
                       const filename = imagePath?.split("/").pop();
                       if (filename) {
                         console.log("Trying alternative path for image");

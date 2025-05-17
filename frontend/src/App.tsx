@@ -12,7 +12,6 @@ import Profile from "./components/Profile/Profile";
 import Header from "./components/Header/Header";
 import axios from "axios";
 
-// Use a type declaration to fix the TypeScript error
 declare global {
   interface ImportMeta {
     env: {
@@ -23,7 +22,6 @@ declare global {
   }
 }
 
-// Using proxy instead of direct URL
 const API_URL = "";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
