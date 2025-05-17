@@ -12,6 +12,17 @@ import Profile from "./components/Profile/Profile";
 import Header from "./components/Header/Header";
 import axios from "axios";
 
+// Use a type declaration to fix the TypeScript error
+declare global {
+  interface ImportMeta {
+    env: {
+      VITE_CLIENT_API_URL: string;
+      VITE_AUTH_API_URL: string;
+      VITE_MODEL_API_URL: string;
+    };
+  }
+}
+
 // Using proxy instead of direct URL
 const API_URL = "";
 
@@ -21,13 +32,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        await axios.post(
-          `/client/`,
-          {},
-          {
-            withCredentials: true,
-          }
-        );
+        await axios.get(`/client/`, {});
         setIsAuthorized(true);
       } catch (error: any) {
         if (error.response && error.response.status === 401) {
@@ -60,13 +65,7 @@ function App() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        await axios.post(
-          `/client/`,
-          {},
-          {
-            withCredentials: true,
-          }
-        );
+        await axios.get(`/client/`, {});
         setIsAuthenticated(true);
       } catch (error: any) {
         if (error.response && error.response.status === 401) {
