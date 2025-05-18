@@ -381,7 +381,6 @@ const Dashboard: React.FC = () => {
                   Классы обнаруженных объектов:
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                  {/* Showing unique classes with their colors */}
                   {Object.keys(classColors).map((className, index) => {
                     const color = classColors[className];
 
@@ -413,9 +412,13 @@ const Dashboard: React.FC = () => {
               </div>
             )}
 
-            {analysisResult.message && (
+            {analysisResult.classes.length > 0 ? (
               <div className="mt-3 text-sm text-gray-600">
                 <p>{analysisResult.message}</p>
+              </div>
+            ) : (
+              <div className="rounded-md bg-red-50 p-4 mt-2">
+                <p className="text-ls text-red-700">Объекты не найдены</p>
               </div>
             )}
           </div>

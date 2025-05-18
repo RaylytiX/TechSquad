@@ -85,7 +85,7 @@ const Profile: React.FC = () => {
         }
 
         setCurrentPage(historyResponse.data.page || 0);
-        setTotalPages(historyResponse.data.total_pages || 1);
+        setTotalPages(historyResponse.data.total_pages || 0);
 
         console.log("Pagination data:", {
           currentPage: historyResponse.data.page,
