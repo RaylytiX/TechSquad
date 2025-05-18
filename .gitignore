@@ -1,11 +1,12 @@
 .venv
 .vscode
 .idea
+/backend/configs/*.pt
 **/__pycache__
 **/media
-/backend/configs/.env
-/backend/configs/yolo11n-seg.pt
 **/Dockerfile
 Dockerfile.base
 docker-compose.yml
 .dockerignore
+**/.env*
+/frontend/vite.config-docker.js

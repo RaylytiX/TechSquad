@@ -132,25 +132,6 @@ async def change_active(user_id: uuid, active: bool, db: db_dependency):
     await db.close()
     return result
 
-async def delete_old_history_by_user(id: uuid, db: db_dependency):
-    count_stmt = select(func.count()).where(Modelpredict.user_id == id)
-    result = await db.execute(count_stmt)
-    total = result.scalar_one()
-
-    if total > 1000:
-        subq = (
-            select(Modelpredict.id)
-            .where(Modelpredict.user_id == id)
-            .order_by(Modelpredict.created_at.asc())
-            .limit(500)
-            .subquery()
-        )
-
-        delete_stmt = delete(Modelpredict).where(Modelpredict.id.in_(select(subq.c.id)))
-        await db.execute(delete_stmt)
-        await db.commit()
-        await db.close()
-
 async def get_history_by_user_id_per_page(id: uuid, page: int, db: db_dependency):
     main_stmt = select(Modelpredict).where(Modelpredict.user_id == id)
     db_history = await db.execute(statement=main_stmt)
