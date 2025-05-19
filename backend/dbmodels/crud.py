@@ -113,6 +113,7 @@ async def add_prediction_to_file(file_id: uuid,
                                  num_classes: list,
                                  classes: list, 
                                  confs: list,
+                                 path_to_report: str,
                                  db: db_dependency):
     db_prediction = Modelpredict(file_id=file_id, 
                                 user_id=user_id, 
@@ -120,7 +121,8 @@ async def add_prediction_to_file(file_id: uuid,
                                 boxes=boxes,
                                 num_classes=num_classes,
                                 classes=classes, 
-                                confs=confs)
+                                confs=confs,
+                                path_to_report=path_to_report)
     db.add(db_prediction)
     await db.commit()
     await db.refresh(db_prediction)

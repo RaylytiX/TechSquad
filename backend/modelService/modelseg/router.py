@@ -1,17 +1,17 @@
 from contextlib import asynccontextmanager
 import os
+import shutil
+import uuid
 import cv2
 from fastapi import BackgroundTasks, Depends, FastAPI
 from fastapi.responses import JSONResponse
-from PIL import Image
-import numpy as np
 from ultralytics import YOLO
 from authService.auth.utils import get_current_user
 from dbmodels.schemas import UserBase, info_file
 from dbmodels.crud import add_prediction_to_file, find_file_by_id
 from dbmodels.database import db_dependency
 from fastapi import APIRouter, status
-from .utils import processed_prediction, split_img
+from .utils import merge_and_create_pdf, processed_prediction, split_img
 from configs.config import settings
 
 MODEL = None
@@ -51,17 +51,20 @@ async def get_predict(info: info_file, background_tasks: BackgroundTasks, user: 
         path_images_list = split_img(combined_image=combined_image, name_image=name_image)
 
         try:
-            result = MODEL.predict(path_images_list)
-
-            # print(result[0])
-            # result[0].show()
+            result = MODEL.predict(path_images_list, save=True)
             
             part_height, part_width, _ = combined_image.shape
             pred = processed_prediction(result, part_height, part_width)
             dict_predict[file.__str__()] = pred
+            output_pdf = f"..{settings.FILE_SAVE_FOLDER}/{uuid.uuid4().hex}.pdf"
+            pred["path_to_report"] = output_pdf
+            background_tasks.add_task(
+                merge_and_create_pdf,
+                pred=pred,
+                input_dir=settings.IMAGE_SAVE_FOLDER,
+                output_pdf=output_pdf
+            )
 
-            for file_path in path_images_list:
-                background_tasks.add_task(os.remove, file_path)
             background_tasks.add_task(
                 add_prediction_to_file,
                 file_id=file.__str__(),
@@ -71,9 +74,13 @@ async def get_predict(info: info_file, background_tasks: BackgroundTasks, user: 
                 num_classes=pred["num_classes"],
                 classes=pred["classes"],
                 confs=pred["confs"],
+                path_to_report=output_pdf,
                 db=db
             )
-            # dict_predict["names"] = dict_names
+
+            for file_path in path_images_list:
+                background_tasks.add_task(os.remove, file_path)
+            background_tasks.add_task(shutil.rmtree, "../runs/", ignore_errors=True)
         except Exception as e:
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,

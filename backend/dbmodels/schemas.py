@@ -37,6 +37,7 @@ class HistorFullResponseDB(BaseModel):
     num_classes: List
     classes: List
     confs: List
+    path_to_report: str
     created_at: datetime
     updated_at: datetime
     model_config = ConfigDict(from_attributes=True)

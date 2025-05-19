@@ -1,6 +1,66 @@
+from datetime import datetime
 import cv2
 from cv2.typing import MatLike
 from configs.config import settings
+import uuid
+from PIL import Image
+import os
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from reportlab.lib.utils import ImageReader
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfbase import pdfmetrics
+from configs.config import settings
+
+def merge_and_create_pdf(pred, input_dir, output_pdf):
+    text=""
+    for v,k in zip(pred["classes"], pred["confs"]):
+        text = text+f"{v}<---->{k}\n"
+    text=text+f"Название класса<---->Точность предсказания\n\nДата:{datetime.now()}\n\nРезультат обработки изображений\n"
+
+    # Склеиваем изображения
+    valid_extensions = {'.jpg', '.jpeg', '.png'}
+    files = [f for f in os.listdir(input_dir) 
+            if os.path.splitext(f)[1].lower() in valid_extensions]
+    
+    if True: files.sort()
+    if not files: raise ValueError("Нет изображений для склейки")
+
+    images = [Image.open(os.path.join(input_dir, f)) for f in files]
+    total_width = sum(img.width for img in images)
+    max_height = max(img.height for img in images)
+    
+    merged_image = Image.new('RGB', (total_width, max_height))
+    x_offset = 0
+    for img in images:
+        merged_image.paste(img, (x_offset, 0))
+        x_offset += img.width
+    
+    # Создаем PDF
+    c = canvas.Canvas(output_pdf, pagesize=letter)
+    width, height = letter
+    
+    # Регистрируем русский шрифт
+    pdfmetrics.registerFont(TTFont('Arial', 'arial.ttf'))
+    c.setFont("Arial", 12)
+
+    # Добавляем изображение (масштабируем под ширину страницы)
+    img_reader = ImageReader(merged_image)
+    img_width, img_height = merged_image.size
+    scale = (width - 100) / img_width  # оставляем поля по 50 точек с каждой стороны
+    c.drawImage(img_reader, 50, height - 50 - img_height*scale, 
+               width=img_width*scale, height=img_height*scale)
+
+    # Добавляем текст под изображением
+    text_lines = text.split('\n')
+    text_height = len(text_lines) * 14
+    y_position = height - 60 - img_height*scale - text_height
+    #print(text_lines)
+    for line in text_lines:
+        c.drawString(50, y_position, line)
+        y_position += 14
+
+    c.save()
 
 def split_img(combined_image: MatLike, name_image: str):
     """

@@ -39,6 +39,7 @@ class Modelpredict(Base):
     num_classes = Column(ARRAY(Integer), nullable=False)
     classes = Column(ARRAY(String), nullable=False)
     confs = Column(ARRAY(Float), nullable=False)
+    path_to_report = Column(String, nullable=False)
     created_at = Column(TIMESTAMP, default=datetime.utcnow)
     updated_at = Column(TIMESTAMP, default=datetime.utcnow, onupdate=datetime.utcnow)
     
