@@ -1,0 +1,99 @@
+services:
+  client-service:
+    build:
+      context: .
+      dockerfile: backend/clientService/Dockerfile
+    image: client-service
+    env_file:
+      - ./backend/configs/.env
+    command: bash -c 'while !/dev/tcp/postgres/5432; do sleep 1; done; cd ./backend; uvicorn clientService.app:app --host 0.0.0.0 --port 8002'
+    ports:
+      - "8002:8002"
+    volumes:
+      - shared-data:/app/
+    depends_on:
+      db:
+        condition: service_healthy
+      base-image:
+        condition: service_started
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: backend/authService/Dockerfile
+    image: auth-service
+    env_file:
+      - ./backend/configs/.env
+    command: bash -c 'while !/dev/tcp/postgres/5432; do sleep 1; done; cd ./backend; uvicorn authService.app:app --host 0.0.0.0 --port 8001'
+    ports:
+      - "8001:8001"
+    volumes:
+      - shared-data:/app/
+    depends_on:
+      db:
+        condition: service_healthy
+      base-image:
+        condition: service_started
+
+  model-service:
+    build:
+      context: .
+      dockerfile: backend/modelService/Dockerfile
+    image: model-service
+    env_file:
+      - ./backend/configs/.env
+    command: bash -c 'while !/dev/tcp/postgres/5432; do sleep 1; done; cd ./backend; uvicorn modelService.app:app --host 0.0.0.0 --port 8003'
+    ports:
+      - "8003:8003"
+    volumes:
+      - shared-data:/app/
+    depends_on:
+      db:
+        condition: service_healthy
+      base-image:
+        condition: service_started
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    image: frontend
+    ports:
+      - "5173:5173"
+    command: bash -c 'npm install; npm run dev'
+    volumes:
+      - shared-data:/app/
+    depends_on:
+      - client-service
+      - auth-service
+      - model-service
+
+  db:
+    image: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres:/var/lib/postgresql/data/
+    env_file:
+      - ./backend/configs/.env
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=0
+      - POSTGRES_DB=techsquad
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  base-image:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile.base
+    image: mybaseimage
+    env_file:
+      - ./backend/configs/.env
+
+volumes:
+  postgres:
+  shared-data:

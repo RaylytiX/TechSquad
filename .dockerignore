@@ -1,0 +1,11 @@
+.venv
+.vscode
+.idea
+.git
+**/__pycache__
+**/public
+**/.venv
+**/node_modules
+**/Dockerfile
+**/Dockerfile.base
+**/docker-compose.yml

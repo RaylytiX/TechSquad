@@ -4,9 +4,5 @@
 /backend/configs/*.pt
 **/__pycache__
 **/media
-**/Dockerfile
-Dockerfile.base
-docker-compose.yml
-.dockerignore
-**/.env*
-/frontend/vite.config-docker.js
+**/.env
+/frontend/public
