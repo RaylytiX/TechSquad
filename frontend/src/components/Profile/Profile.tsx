@@ -23,6 +23,7 @@ interface SelectedHistoryItem {
   boxes: any[];
   classes: string[];
   num_classes: number[];
+  ind_cls: { [key: string]: string };
   confs: number[];
   created_at: string;
   updated_at: string;
@@ -43,6 +44,7 @@ const Profile: React.FC = () => {
   const [showBoxes, setShowBoxes] = useState<boolean>(true);
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [totalPages, setTotalPages] = useState<number>(1);
+  const [classColors, setClassColors] = useState<{ [key: string]: string }>({});
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const debugImageRef = useRef<HTMLImageElement>(null);
 
@@ -159,6 +161,25 @@ const Profile: React.FC = () => {
     }
   };
 
+  // Функция для получения цвета класса
+  const getColorForClass = (className: string, classIndex: number) => {
+    // Если для класса уже назначен цвет, используем его
+    if (classColors[className]) {
+      return classColors[className];
+    }
+
+    // Иначе генерируем новый цвет и сохраняем его
+    const hue = (classIndex * 137) % 360;
+    const color = `hsl(${hue}, 70%, 50%)`;
+
+    setClassColors((prevColors) => ({
+      ...prevColors,
+      [className]: color,
+    }));
+
+    return color;
+  };
+
   const drawResultsOnCanvas = () => {
     if (
       !canvasRef.current ||
@@ -196,9 +217,12 @@ const Profile: React.FC = () => {
           selectedHistory.classes &&
           index < selectedHistory.classes.length
         ) {
-          const classIdx = selectedHistory.classes[index];
-          const hue = (classIdx * 137) % 360;
-          const color = `hsl(${hue}, 70%, 50%)`;
+          const className = selectedHistory.classes[index];
+          const classIndex = selectedHistory.num_classes[index];
+          const color = getColorForClass(className, classIndex);
+          // Извлекаем hue из color строки безопасным способом
+          const hueMatch = color.match(/\d+/);
+          const hue = hueMatch ? hueMatch[0] : "0";
           const rgbaFill = `hsla(${hue}, 70%, 50%, 0.3)`;
           const rgbaBorder = `hsla(${hue}, 70%, 50%, 0.8)`;
 
@@ -232,9 +256,9 @@ const Profile: React.FC = () => {
           const width = box[2] - box[0];
           const height = box[3] - box[1];
 
-          const classIdx = selectedHistory.classes[index];
-          const hue = (classIdx * 137) % 360;
-          const color = `hsl(${hue}, 70%, 50%)`;
+          const className = selectedHistory.classes[index];
+          const classIndex = selectedHistory.num_classes[index];
+          const color = getColorForClass(className, classIndex);
 
           ctx.strokeStyle = color;
           ctx.lineWidth = 2;
@@ -242,7 +266,6 @@ const Profile: React.FC = () => {
 
           if (selectedHistory.classes && selectedHistory.confs) {
             const confidence = selectedHistory.confs[index];
-            const className = selectedHistory.classes[index];
 
             ctx.fillStyle = color;
             ctx.globalAlpha = 0.7;
@@ -294,18 +317,6 @@ const Profile: React.FC = () => {
         setError("Ошибка при загрузке деталей истории");
       }
     }
-  };
-
-  const getClassName = (classId: number): string => {
-    if (
-      selectedHistory &&
-      selectedHistory.classes &&
-      classId < selectedHistory.classes.length
-    ) {
-      return selectedHistory.classes[classId];
-    }
-
-    return `класс ${classId}`;
   };
 
   if (isLoading) {
@@ -667,11 +678,8 @@ const Profile: React.FC = () => {
                     <div className="flex flex-wrap gap-2">
                       {selectedHistory.classes.map(
                         (className: string, index: number) => {
-                          const classIdx = selectedHistory.num_classes
-                            ? selectedHistory.num_classes[index]
-                            : index;
-                          const hue = (classIdx * 137) % 360;
-                          const color = `hsl(${hue}, 70%, 50%)`;
+                          const classIndex = selectedHistory.num_classes[index];
+                          const color = getColorForClass(className, classIndex);
                           return (
                             <span
                               key={index}
