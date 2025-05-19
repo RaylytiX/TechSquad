@@ -63,6 +63,7 @@ def processed_prediction(result: list, part_height, part_width):
         "boxes": boxes_global,
         "classes": classes,
         "num_classes": class_ids,
+        "inx_cls": det.names,
         "confs": confs,
         "detected_objects": len(class_ids),
     }

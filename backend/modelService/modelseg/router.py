@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import os
 import cv2
 from fastapi import BackgroundTasks, Depends, FastAPI
 from fastapi.responses import JSONResponse
@@ -58,6 +59,9 @@ async def get_predict(info: info_file, background_tasks: BackgroundTasks, user: 
             part_height, part_width, _ = combined_image.shape
             pred = processed_prediction(result, part_height, part_width)
             dict_predict[file.__str__()] = pred
+
+            for file_path in path_images_list:
+                background_tasks.add_task(os.remove, file_path)
             background_tasks.add_task(
                 add_prediction_to_file,
                 file_id=file.__str__(),
