@@ -11,6 +11,7 @@ class File(Base):
     id = Column(UUID, primary_key=True, default=uuid.uuid4)
     path_to_file = Column(String, nullable=False)
     created_at = Column(TIMESTAMP, default=datetime.utcnow)
+    updated_at = Column(TIMESTAMP, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     file_id = Column(UUID, ForeignKey("users.id"), nullable=False)
     users = relationship("User", back_populates="user_path_file")
@@ -23,6 +24,7 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean)
     created_at = Column(TIMESTAMP, default=datetime.utcnow)
+    updated_at = Column(TIMESTAMP, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     user_path_file = relationship("File", back_populates="users")
 
@@ -34,7 +36,8 @@ class Modelpredict(Base):
     file_id = Column(UUID, ForeignKey("files.id"), nullable=False)
     masks = Column(JSONB, nullable=False)
     boxes = Column(JSONB, nullable=False)
-    classes = Column(ARRAY(Integer), nullable=False)
+    num_classes = Column(ARRAY(Integer), nullable=False)
+    classes = Column(ARRAY(String), nullable=False)
     confs = Column(ARRAY(Float), nullable=False)
     created_at = Column(TIMESTAMP, default=datetime.utcnow)
     updated_at = Column(TIMESTAMP, default=datetime.utcnow, onupdate=datetime.utcnow)

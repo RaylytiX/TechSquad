@@ -72,13 +72,16 @@ async def history(file_id: str, user: UserBase = Depends(get_current_user), db: 
         )
     
     history = HistorFullResponseDB.model_validate(db_history)
+    ind_cls = {int(i):v for i,v in zip(history.num_classes, history.classes)}
     response = {
         "user_id": str(history.user_id),
         "file_id": str(history.file_id),
         "masks": history.masks,
         "boxes": history.boxes,
         "classes": history.classes,
+        "num_classes": history.num_classes,
         "confs": history.confs,
+        "ind_cls": ind_cls,
         "created_at": history.created_at.strftime("%d.%m.%Y %H:%M:%S"),
         "updated_at": history.updated_at.strftime("%d.%m.%Y %H:%M:%S"),
     }

@@ -56,14 +56,14 @@ def processed_prediction(result: list, part_height, part_width):
             classes.extend([det.names[c] for c in det.boxes.cls.tolist()])
             class_ids.extend(det.boxes.cls.tolist())
             confs.extend(det.boxes.conf.tolist())
-
+    ind_cls = {int(i):v for i,v in zip(class_ids, classes)}
     return {
         "message": "Prediction completed successfully",
         "masks": masks_global,
         "boxes": boxes_global,
         "classes": classes,
         "num_classes": class_ids,
-        "inx_cls": det.names,
+        "ind_cls": ind_cls,
         "confs": confs,
         "detected_objects": len(class_ids),
     }

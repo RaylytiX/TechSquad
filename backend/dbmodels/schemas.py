@@ -11,6 +11,7 @@ class UserBase(BaseModel):
     email: EmailStr
     is_active: bool
     created_at: datetime
+    updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -33,6 +34,7 @@ class HistorFullResponseDB(BaseModel):
     file_id: UUID
     masks: List
     boxes: List
+    num_classes: List
     classes: List
     confs: List
     created_at: datetime

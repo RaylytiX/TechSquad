@@ -68,8 +68,8 @@ async def get_predict(info: info_file, background_tasks: BackgroundTasks, user: 
                 user_id=user.id,
                 masks=pred["masks"],
                 boxes=pred["boxes"],
-                classes=pred["num_classes"],
-                # str_classes=pred["classes"],
+                num_classes=pred["num_classes"],
+                classes=pred["classes"],
                 confs=pred["confs"],
                 db=db
             )

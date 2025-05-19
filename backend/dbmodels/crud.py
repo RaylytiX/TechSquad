@@ -109,14 +109,16 @@ async def create_user(email: str, hashed_password: str, active: bool, db: db_dep
 async def add_prediction_to_file(file_id: uuid, 
                                  user_id: uuid, 
                                  masks: list, 
-                                 boxes:list, 
-                                 classes:list, 
-                                 confs:list, 
+                                 boxes: list,
+                                 num_classes: list,
+                                 classes: list, 
+                                 confs: list,
                                  db: db_dependency):
     db_prediction = Modelpredict(file_id=file_id, 
                                 user_id=user_id, 
                                 masks=masks, 
-                                boxes=boxes, 
+                                boxes=boxes,
+                                num_classes=num_classes,
                                 classes=classes, 
                                 confs=confs)
     db.add(db_prediction)
