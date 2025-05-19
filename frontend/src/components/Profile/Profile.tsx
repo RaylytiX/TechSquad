@@ -21,7 +21,8 @@ interface SelectedHistoryItem {
   file_id: string;
   masks: any[];
   boxes: any[];
-  classes: number[];
+  classes: string[];
+  num_classes: number[];
   confs: number[];
   created_at: string;
   updated_at: string;
@@ -132,13 +133,13 @@ const Profile: React.FC = () => {
       console.log("Image path response:", response.data);
 
       if (response.data && response.data.path) {
-        const filename = response.data.path.split("/").pop();
+        const filename = response.data.path;
         console.log("Extracted filename:", filename);
 
         if (filename) {
-          const imagePath = `../public/media/${filename}`;
-          console.log("Setting image path to:", imagePath);
-          setImagePath(imagePath);
+          const cleanedPath = filename.replace("../frontend/public/", "/");
+          console.log("Setting image path to:", cleanedPath);
+          setImagePath(cleanedPath);
         } else {
           console.error(
             "Could not extract filename from path:",
@@ -241,8 +242,7 @@ const Profile: React.FC = () => {
 
           if (selectedHistory.classes && selectedHistory.confs) {
             const confidence = selectedHistory.confs[index];
-
-            const className = getClassName(classIdx);
+            const className = selectedHistory.classes[index];
 
             ctx.fillStyle = color;
             ctx.globalAlpha = 0.7;
@@ -297,50 +297,26 @@ const Profile: React.FC = () => {
   };
 
   const getClassName = (classId: number): string => {
+    if (
+      selectedHistory &&
+      selectedHistory.classes &&
+      classId < selectedHistory.classes.length
+    ) {
+      return selectedHistory.classes[classId];
+    }
+
     const classMapping: { [key: number]: string } = {
-      0: "person",
-      1: "bicycle",
-      2: "car",
-      3: "motorcycle",
-      4: "airplane",
-      5: "bus",
-      6: "train",
-      7: "truck",
-      8: "boat",
-      9: "traffic light",
-      10: "fire hydrant",
-      11: "stop sign",
-      12: "parking meter",
-      13: "bench",
-      14: "bird",
-      15: "cat",
-      16: "dog",
-      17: "horse",
-      18: "sheep",
-      19: "cow",
-      20: "elephant",
-      21: "bear",
-      22: "zebra",
-      23: "giraffe",
-      24: "backpack",
-      25: "umbrella",
-      26: "handbag",
-      27: "tie",
-      28: "suitcase",
-      29: "frisbee",
-      30: "skis",
-      31: "snowboard",
-      32: "sports ball",
-      33: "kite",
-      34: "baseball bat",
-      35: "baseball glove",
-      36: "skateboard",
-      37: "surfboard",
-      38: "tennis racket",
-      39: "bottle",
+      0: "пора",
+      1: "дефект",
+      2: "царапина",
+      3: "деформация",
+      4: "пятно",
+      5: "сварной шов",
+      6: "эталон1",
+      7: "эталон2",
     };
 
-    return classMapping[classId] || `class ${classId}`;
+    return classMapping[classId] || `класс ${classId}`;
   };
 
   if (isLoading) {
@@ -605,10 +581,16 @@ const Profile: React.FC = () => {
                     onError={(e) => {
                       console.error("Error loading image:", e);
 
-                      const filename = imagePath?.split("/").pop();
+                      const filename = imagePath;
+                      console.log("filename", filename);
                       if (filename) {
                         console.log("Trying alternative path for image");
-                        e.currentTarget.src = `../public/media/${filename}`;
+                        // Try a different approach to load the image - direct from the media folder
+                        const simplePath = `/media/${filename
+                          .split("/")
+                          .pop()}`;
+                        console.log("Using simple path fallback:", simplePath);
+                        e.currentTarget.src = simplePath;
                       }
                     }}
                     onLoad={(e) => {
@@ -695,10 +677,12 @@ const Profile: React.FC = () => {
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {selectedHistory.classes.map(
-                        (classIdx: number, index: number) => {
+                        (className: string, index: number) => {
+                          const classIdx = selectedHistory.num_classes
+                            ? selectedHistory.num_classes[index]
+                            : index;
                           const hue = (classIdx * 137) % 360;
                           const color = `hsl(${hue}, 70%, 50%)`;
-                          const className = getClassName(classIdx);
                           return (
                             <span
                               key={index}
