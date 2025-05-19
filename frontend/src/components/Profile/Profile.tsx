@@ -305,18 +305,7 @@ const Profile: React.FC = () => {
       return selectedHistory.classes[classId];
     }
 
-    const classMapping: { [key: number]: string } = {
-      0: "пора",
-      1: "дефект",
-      2: "царапина",
-      3: "деформация",
-      4: "пятно",
-      5: "сварной шов",
-      6: "эталон1",
-      7: "эталон2",
-    };
-
-    return classMapping[classId] || `класс ${classId}`;
+    return `класс ${classId}`;
   };
 
   if (isLoading) {
