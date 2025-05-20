@@ -1,9 +1,46 @@
-IMPORTANT: Before launching the microservice responsible for the model, download the model from the [link](https://drive.google.com/file/d/1o-8-9i3Aa5lpI3hzjGHHf4MdHv2VBV_o/view?usp=sharing), and place it in the [config directory](https://github.com/Serfetto/techsquad/tree/main/backend/configs)
+# 🛠️ TechSquad Backend
 
-Open three new consoles and follow the commands:
-1. In all consoles type: ```cd backend```
-2. In all consoles type: ```python -m venv .venv```
-3. In all consoles type: ```.venv/Scripts/activate```
-4. In one console type: ```pip install -r configs/requirements.txt```
-6. In the first console add this command -> ```python -m clientService.app``` -> and in the second console add this command -> ```python -m authService.app``` -> and in the third console add this command -> ```python -m modelService.app```
-7. Open browser and type this urls: ```http://localhost:8001/docs```, ```http://localhost:8002/docs```, ```http://localhost:8003/docs```
+## 📁 Структура проекта
+
+### `backend/` — бэкенд-часть приложения
+- **`Dockerfile.base`** — базовый образ Dockerfile для установки зависимостей и использования другими docker файлами
+---
+
+### `authService/` — 🔐 сервис регистрации/авторизации 
+- **`auth/`** — содержит маршруты и бизнес-логику авторизации  
+- **`app.py`** — точка входа для запуска сервиса  
+- **`Dockerfile`** — Docker-инструкция для сборки
+- **`healthcheckerauth.py`** — проверка работоспособности сервиса
+
+---
+
+### `clientService/` — 👥 сервис работы с клиентами и файлами  
+- **`client/`** — маршруты и вспомогательные функции для работы с пользователями  
+- **`files/`** — маршруты и утилиты для загрузки и обработки файлов  
+- **`app.py`** — основной файл запуска сервиса  
+- **`Dockerfile`** — Docker-инструкция для сборки 
+- **`healthcheckerclient.py`** — проверка работоспособности сервиса
+
+---
+
+### `modelService/` — 🤖 сервис машинного обучения  
+- **`modelseg/`** — логика работы с ML-моделью (сегментацией изображений)  
+- **`app.py`** — точка входа FastAPI-приложения  
+- **`Dockerfile`** — Docker-инструкция сборки  
+- **`healthcheckermodel.py`** — проверка работоспособности сервиса
+
+---
+
+### `dbmodels/` — 🧬 логика работы с базой данных  
+- **`crud.py`** — CRUD-операции  
+- **`database.py`** — подключение к базе данных  
+- **`models.py`** — описание ORM-моделей  
+- **`schemas.py`** — Pydantic-схемы для сериализации и валидации данных
+
+---
+
+### `configs/` — ⚙️ конфигурационные файлы и зависимости  
+- **`.env.example / .env-docker`** — переменные окружения для локальной и docker-сборки  
+- **`config.py`** — логика загрузки и обработки зависимостей  
+- **`model.pt`** — веса предварительно обученной модели  
+- **`requirements.txt`** — список библиотек используемых в backend-приложении
