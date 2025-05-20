@@ -27,6 +27,7 @@ interface SelectedHistoryItem {
   confs: number[];
   created_at: string;
   updated_at: string;
+  path_to_report: string;
 }
 
 const Profile: React.FC = () => {
@@ -47,6 +48,9 @@ const Profile: React.FC = () => {
   const [classColors, setClassColors] = useState<{ [key: string]: string }>({});
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const debugImageRef = useRef<HTMLImageElement>(null);
+  const [downloadingReport, setDownloadingReport] = useState<boolean>(false);
+  const [pdfViewerOpen, setPdfViewerOpen] = useState<boolean>(false);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
   const fetchUserData = async () => {
     setIsLoading(true);
@@ -317,6 +321,112 @@ const Profile: React.FC = () => {
         setError("Ошибка при загрузке деталей истории");
       }
     }
+  };
+
+  // Add this utility function to fix PDF paths - checks if we need to modify the path
+  const getCorrectPdfPath = (originalPath: string): string => {
+    console.log("Original PDF path:", originalPath);
+
+    // If the path already starts with /media, it's likely already correct
+    if (originalPath.startsWith("/media")) {
+      return originalPath;
+    }
+
+    // Handle paths that include "../frontend/public"
+    if (originalPath.includes("../frontend/public")) {
+      return originalPath.replace("../frontend/public", "");
+    }
+
+    // Extract just the filename
+    const filename = originalPath.split("/").pop();
+
+    // If we can extract a filename, use it directly with /media
+    if (filename) {
+      return `/media/${filename}`;
+    }
+
+    // If we can't fix it, return original
+    return originalPath;
+  };
+
+  // Replace the downloadPdfReport function
+  const downloadPdfReport = (reportPath: string) => {
+    try {
+      if (!reportPath) {
+        setError("Путь к отчету не определен");
+        return;
+      }
+
+      setError(null);
+      setDownloadingReport(true);
+
+      // Get the corrected path
+      const correctPath = getCorrectPdfPath(reportPath);
+      console.log("Downloading PDF from corrected path:", correctPath);
+
+      // Use the fetch API to check if the file exists and get it as a blob
+      fetch(correctPath)
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          return response.blob();
+        })
+        .then((blob) => {
+          // Create a blob URL
+          const blobUrl = URL.createObjectURL(blob);
+
+          // Create a link to download it
+          const link = document.createElement("a");
+          link.href = blobUrl;
+          link.download = correctPath.split("/").pop() || "report.pdf";
+
+          // Trigger download
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+
+          // Clean up
+          setTimeout(() => {
+            URL.revokeObjectURL(blobUrl);
+            setDownloadingReport(false);
+          }, 200);
+        })
+        .catch((err) => {
+          console.error("Failed to fetch PDF:", err);
+          setError(`Ошибка загрузки: ${err.message}`);
+          setDownloadingReport(false);
+        });
+    } catch (err) {
+      console.error("Error in download process:", err);
+      setError("Ошибка при скачивании отчета");
+      setDownloadingReport(false);
+    }
+  };
+
+  // Replace the viewPdfInBrowser function
+  const viewPdfInBrowser = (reportPath: string) => {
+    try {
+      if (!reportPath) {
+        setError("Путь к отчету не определен");
+        return;
+      }
+
+      // Get the corrected path
+      const correctPath = getCorrectPdfPath(reportPath);
+      console.log("Opening PDF in browser, path:", correctPath);
+
+      // Open in a new tab
+      window.open(correctPath, "_blank");
+    } catch (err) {
+      console.error("Error opening PDF:", err);
+      setError("Ошибка при открытии отчета");
+    }
+  };
+
+  const closePdfViewer = () => {
+    setPdfViewerOpen(false);
+    setPdfUrl(null);
   };
 
   if (isLoading) {
@@ -641,6 +751,91 @@ const Profile: React.FC = () => {
                     {selectedHistory.updated_at}
                   </p>
                 </div>
+                <div>
+                  <p className="text-sm text-gray-500">Отчет</p>
+                  <div className="flex space-x-2">
+                    <button
+                      className="text-blue-600 hover:text-blue-800 font-medium flex items-center"
+                      onClick={() =>
+                        downloadPdfReport(selectedHistory.path_to_report)
+                      }
+                      disabled={downloadingReport}
+                    >
+                      {downloadingReport ? (
+                        <>
+                          <svg
+                            className="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-600"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
+                          </svg>
+                          Скачивание...
+                        </>
+                      ) : (
+                        <>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5 mr-1"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                            />
+                          </svg>
+                          Скачать отчет
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      className="text-green-600 hover:text-green-800 font-medium flex items-center"
+                      onClick={() =>
+                        viewPdfInBrowser(selectedHistory.path_to_report)
+                      }
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 mr-1"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                        />
+                      </svg>
+                      Просмотреть
+                    </button>
+                  </div>
+                </div>
 
                 {selectedHistory.masks && (
                   <div>
@@ -702,6 +897,56 @@ const Profile: React.FC = () => {
           )}
         </div>
       </div>
+
+      {pdfViewerOpen && pdfUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4">
+          <div className="relative bg-white rounded-lg w-full max-w-6xl h-5/6 flex flex-col">
+            <div className="flex justify-between items-center p-4 border-b">
+              <h3 className="text-xl font-semibold">Просмотр отчета</h3>
+              <button
+                onClick={closePdfViewer}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+            <div className="flex-grow p-1 overflow-hidden">
+              <iframe
+                src={getCorrectPdfPath(pdfUrl)}
+                className="w-full h-full border-0"
+                title="PDF Report"
+              />
+            </div>
+            <div className="p-4 border-t flex justify-between">
+              <button
+                onClick={closePdfViewer}
+                className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
+              >
+                Закрыть
+              </button>
+              <button
+                onClick={() => downloadPdfReport(pdfUrl)}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Скачать
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
