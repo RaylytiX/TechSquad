@@ -82,7 +82,7 @@ async def get_predict(info: info_file, background_tasks: BackgroundTasks, user: 
                 output_pdf=output_pdf
             )
 
-            #background_tasks.add_task(shutil.rmtree, "../runs/", ignore_errors=True)
+            background_tasks.add_task(shutil.rmtree, result[0].save_dir, ignore_errors=True)
         except Exception as e:
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
