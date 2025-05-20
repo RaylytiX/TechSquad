@@ -5,6 +5,7 @@ import uuid
 import cv2
 from fastapi import BackgroundTasks, Depends, FastAPI
 from fastapi.responses import JSONResponse
+import torch
 from ultralytics import YOLO
 from authService.auth.utils import get_current_user
 from dbmodels.schemas import HistorFullResponseDB, UserBase, info_file, info_prediction, result_update
@@ -20,7 +21,9 @@ MODEL = None
 async def lifespan(app: FastAPI):
     global MODEL
     try:
+        device = "cuda" if torch.cuda.is_available() else "cpu"
         MODEL = YOLO(settings.PATHTOMODEL)
+        MODEL.to(device)
     except Exception as e:
         print(f"Error loading model: {str(e)}")
     yield
