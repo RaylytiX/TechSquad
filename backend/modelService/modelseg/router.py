@@ -58,12 +58,6 @@ async def get_predict(info: info_file, background_tasks: BackgroundTasks, user: 
             dict_predict[file.__str__()] = pred
             output_pdf = f"..{settings.FILE_SAVE_FOLDER}/{uuid.uuid4().hex}.pdf"
             pred["path_to_report"] = output_pdf
-            background_tasks.add_task(
-                merge_and_create_pdf,
-                pred=pred,
-                input_dir=settings.IMAGE_SAVE_FOLDER,
-                output_pdf=output_pdf
-            )
 
             background_tasks.add_task(
                 add_prediction_to_file,
@@ -80,6 +74,14 @@ async def get_predict(info: info_file, background_tasks: BackgroundTasks, user: 
 
             for file_path in path_images_list:
                 background_tasks.add_task(os.remove, file_path)
+
+            background_tasks.add_task(
+                merge_and_create_pdf,
+                pred=pred,
+                input_dir=settings.IMAGE_SAVE_FOLDER,
+                output_pdf=output_pdf
+            )
+            
             background_tasks.add_task(shutil.rmtree, "../runs/", ignore_errors=True)
         except Exception as e:
             return JSONResponse(

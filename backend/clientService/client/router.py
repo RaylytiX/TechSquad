@@ -82,6 +82,7 @@ async def history(file_id: str, user: UserBase = Depends(get_current_user), db: 
         "num_classes": history.num_classes,
         "confs": history.confs,
         "ind_cls": ind_cls,
+        "path_to_report": history.path_to_report,
         "created_at": history.created_at.strftime("%d.%m.%Y %H:%M:%S"),
         "updated_at": history.updated_at.strftime("%d.%m.%Y %H:%M:%S"),
     }
