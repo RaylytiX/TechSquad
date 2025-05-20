@@ -1,3 +1,5 @@
+IMPORTANT: Before launching the microservice responsible for the model, download the model from the [link](https://drive.google.com/file/d/1o-8-9i3Aa5lpI3hzjGHHf4MdHv2VBV_o/view?usp=sharing), and place it in the [config directory](https://github.com/Serfetto/techsquad/tree/main/backend/configs)
+
 Open three new consoles and follow the commands:
 1. In all consoles type: ```cd backend```
 2. In all consoles type: ```python -m venv .venv```
