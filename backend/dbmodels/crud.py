@@ -129,6 +129,25 @@ async def add_prediction_to_file(file_id: uuid,
     await db.close()
     return db_prediction
 
+async def change_prediction(file_id: uuid, 
+                            user_id: uuid, 
+                            masks: list, 
+                            boxes: list,
+                            num_classes: list,
+                            classes: list, 
+                            db: db_dependency):
+    stmt = update(Modelpredict).where(and_(Modelpredict.user_id == user_id, Modelpredict.file_id == file_id)).values(masks=masks, 
+                                                                                                                boxes=boxes, 
+                                                                                                                num_classes=num_classes,
+                                                                                                                classes=classes)
+    result = await db.execute(stmt)
+    await db.commit()
+    
+    if result.rowcount == 0:
+        return None
+        
+    return result.rowcount
+
 async def change_active(user_id: uuid, active: bool, db: db_dependency):
     stmt = update(User).where(User.id == user_id).values(is_active=active)
     result = await db.execute(stmt)
@@ -137,7 +156,7 @@ async def change_active(user_id: uuid, active: bool, db: db_dependency):
     return result
 
 async def get_history_by_user_id_per_page(id: uuid, page: int, db: db_dependency):
-    main_stmt = select(Modelpredict).where(Modelpredict.user_id == id)
+    main_stmt = select(Modelpredict).where(Modelpredict.user_id == id).order_by(Modelpredict.created_at.desc())
     db_history = await db.execute(statement=main_stmt)
     db_history = db_history.scalars().fetchall()
     await db.close()

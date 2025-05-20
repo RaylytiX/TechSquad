@@ -7,8 +7,8 @@ from fastapi import BackgroundTasks, Depends, FastAPI
 from fastapi.responses import JSONResponse
 from ultralytics import YOLO
 from authService.auth.utils import get_current_user
-from dbmodels.schemas import UserBase, info_file
-from dbmodels.crud import add_prediction_to_file, find_file_by_id
+from dbmodels.schemas import HistorFullResponseDB, UserBase, info_file, info_prediction, result_update
+from dbmodels.crud import add_prediction_to_file, change_prediction, find_file_by_id
 from dbmodels.database import db_dependency
 from fastapi import APIRouter, status
 from .utils import merge_and_create_pdf, processed_prediction, split_img
@@ -91,4 +91,38 @@ async def get_predict(info: info_file, background_tasks: BackgroundTasks, user: 
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content=dict_predict
+    )
+
+@router.patch("/update_predict")
+async def update_predict(info_predict: info_prediction, background_tasks: BackgroundTasks, user: UserBase = Depends(get_current_user), db: db_dependency = db_dependency):
+    if not user or not user.is_active:
+        return JSONResponse(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            content={"message": "User not found or inactive"},
+        )
+    try:
+        result = await change_prediction(file_id=info_predict.file_id, 
+                                user_id=user.id, 
+                                masks=info_predict.masks,
+                                boxes=info_predict.boxes,
+                                num_classes=info_predict.num_classes,
+                                classes=info_predict.classes,
+                                db=db)
+    except Exception as e:
+        print(e)
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content=None
+        )
+    
+    if result is None:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            content={"message":"No matching record found to update"}
+        )
+
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={"message":"Успешно обновлена информация",
+                 "rows_updated":result}
     )

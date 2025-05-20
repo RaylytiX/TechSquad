@@ -6,6 +6,25 @@ from uuid import UUID
 class info_file(BaseModel):
     files_id: List[UUID]
 
+class info_prediction(BaseModel):
+    file_id: UUID
+    masks: List[List[List[float]]]
+    boxes: List[List[float]]
+    num_classes: List[int]
+    classes: List[str]
+
+    model_config = ConfigDict(from_attributes=True)
+
+class result_update(BaseModel):
+    file_id: UUID
+    user_id: UUID
+    masks: List[List[List[float]]]
+    boxes: List[List[float]]
+    num_classes: List[int]
+    classes: List[str]
+
+    model_config = ConfigDict(from_attributes=True)
+
 class UserBase(BaseModel):
     id: UUID
     email: EmailStr
@@ -32,11 +51,11 @@ class AccessToken(BaseModel):
 class HistorFullResponseDB(BaseModel):
     user_id: UUID
     file_id: UUID
-    masks: List
-    boxes: List
-    num_classes: List
-    classes: List
-    confs: List
+    masks: List[List[List[float]]]
+    boxes: List[List[float]]
+    num_classes: List[int]
+    classes: List[str]
+    confs: List[float]
     path_to_report: str
     created_at: datetime
     updated_at: datetime
