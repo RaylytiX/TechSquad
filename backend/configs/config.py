@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     # Images
     APPLYLOADFORMATFILE: list = ["png", "jpeg"]
     FILE_SAVE_FOLDER: str = ""
-    IMAGE_SAVE_FOLDER: str = "../runs/segment/predict/"
+    #IMAGE_SAVE_FOLDER: str = "../runs/segment/predict/"
     GRID_ROWS: int = 1
     GRID_COLS: int = 28
 

@@ -52,7 +52,7 @@ async def get_predict(info: info_file, background_tasks: BackgroundTasks, user: 
 
         try:
             result = MODEL.predict(path_images_list, save=True)
-            
+            #print(result[0])
             part_height, part_width, _ = combined_image.shape
             pred = processed_prediction(result, part_height, part_width)
             dict_predict[file.__str__()] = pred
@@ -78,11 +78,11 @@ async def get_predict(info: info_file, background_tasks: BackgroundTasks, user: 
             background_tasks.add_task(
                 merge_and_create_pdf,
                 pred=pred,
-                input_dir=settings.IMAGE_SAVE_FOLDER,
+                input_dir=result[0].save_dir,
                 output_pdf=output_pdf
             )
-            
-            background_tasks.add_task(shutil.rmtree, "../runs/", ignore_errors=True)
+
+            #background_tasks.add_task(shutil.rmtree, "../runs/", ignore_errors=True)
         except Exception as e:
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
