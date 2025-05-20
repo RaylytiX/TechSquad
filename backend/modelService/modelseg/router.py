@@ -51,7 +51,7 @@ async def get_predict(info: info_file, background_tasks: BackgroundTasks, user: 
         path_images_list = split_img(combined_image=combined_image, name_image=name_image)
 
         try:
-            result = MODEL.predict(path_images_list, save=True)
+            result = MODEL.predict(path_images_list, save=True, project="./runs")
             #print(result[0])
             part_height, part_width, _ = combined_image.shape
             pred = processed_prediction(result, part_height, part_width)
@@ -82,12 +82,12 @@ async def get_predict(info: info_file, background_tasks: BackgroundTasks, user: 
                 output_pdf=output_pdf
             )
 
-            background_tasks.add_task(shutil.rmtree, result[0].save_dir, ignore_errors=True)
         except Exception as e:
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={"message": f"Prediction failed: {str(e)}"},
             )
+    background_tasks.add_task(shutil.rmtree, result[0].save_dir, ignore_errors=True)
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content=dict_predict
