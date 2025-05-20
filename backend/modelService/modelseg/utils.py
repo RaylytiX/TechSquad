@@ -41,7 +41,10 @@ def merge_and_create_pdf(pred, input_dir, output_pdf):
     width, height = letter
     
     # Регистрируем русский шрифт
-    pdfmetrics.registerFont(TTFont('Arial', 'arial.ttf'))
+    try:
+        pdfmetrics.registerFont(TTFont('Arial', 'arial.ttf'))
+    except Exception:
+        pdfmetrics.registerFont(TTFont('Arial', 'DejaVuSans.ttf'))
     c.setFont("Arial", 12)
 
     # Добавляем изображение (масштабируем под ширину страницы)

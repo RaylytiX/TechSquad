@@ -4,11 +4,14 @@ WORKDIR /app
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    libgl1 \
-    libglib2.0-0 \
-    build-essential && \
+        fonts-dejavu-core \
+        fonts-dejavu-extra \
+        libgl1 \
+        libglib2.0-0 \
+        build-essential && \
+    fc-cache -fv && \
     rm -rf /var/lib/apt/lists/*
 
-COPY ./backend/configs/requirements.txt .
+COPY ./backend/configs/requirements.txt ./backend/configs/requirements.txt
 RUN pip install --upgrade pip
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r ./backend/configs/requirements.txt
