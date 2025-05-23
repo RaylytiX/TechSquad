@@ -1,8 +1,9 @@
 from datetime import datetime
+import io
+import re
 import cv2
 from cv2.typing import MatLike
 from configs.config import settings
-import uuid
 from PIL import Image
 import os
 from reportlab.lib.pagesizes import letter
@@ -11,8 +12,26 @@ from reportlab.lib.utils import ImageReader
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase import pdfmetrics
 from configs.config import settings
+from dbmodels.database import s3_dependency
 
-def merge_and_create_pdf(pred, input_dir, output_pdf):
+# async def download_image_bytes(url: str):
+#     try:
+#         async with httpx.AsyncClient() as client:
+#             response = await client.get(url)
+#             if response.status_code != 200:
+#                 return JSONResponse(
+#                     status_code=response.status_code,
+#                     content={"message": f"Ошибка при загрузке изображения. Код статуса: {response.status_code}"}
+#                 )
+#             image = Image.open(io.BytesIO(response.content)).convert("RGB")
+#             return image
+#     except Exception as e:
+#         return JSONResponse(
+#             status_code=500,
+#             content={"message": f"Ошибка при скачивании изображения: {str(e)}"}
+#         )
+
+async def merge_and_create_pdf(pred, input_dir, name_pdf, s3: s3_dependency):
     text=""
     for v,k in zip(pred["classes"], pred["confs"]):
         text = text+f"{v}<---->{k}\n"
@@ -23,7 +42,12 @@ def merge_and_create_pdf(pred, input_dir, output_pdf):
     files = [f for f in os.listdir(input_dir) 
             if os.path.splitext(f)[1].lower() in valid_extensions]
     
-    if True: files.sort()
+    if True:
+        def natural_key(filename):
+            return [int(text) if text.isdigit() else text for text in re.split(r'(\d+)', filename)]
+
+        files.sort(key=natural_key)
+
     if not files: raise ValueError("Нет изображений для склейки")
 
     images = [Image.open(os.path.join(input_dir, f)) for f in files]
@@ -36,8 +60,8 @@ def merge_and_create_pdf(pred, input_dir, output_pdf):
         merged_image.paste(img, (x_offset, 0))
         x_offset += img.width
     
-    # Создаем PDF
-    c = canvas.Canvas(output_pdf, pagesize=letter)
+    pdf_buffer = io.BytesIO()
+    c = canvas.Canvas(pdf_buffer, pagesize=letter)
     width, height = letter
     
     # Регистрируем русский шрифт
@@ -58,12 +82,26 @@ def merge_and_create_pdf(pred, input_dir, output_pdf):
     text_lines = text.split('\n')
     text_height = len(text_lines) * 14
     y_position = height - 60 - img_height*scale - text_height
-    #print(text_lines)
+
     for line in text_lines:
         c.drawString(50, y_position, line)
         y_position += 14
 
     c.save()
+    
+    # Получаем содержимое PDF из буфера
+    pdf_buffer.seek(0)
+    pdf_contents = pdf_buffer.getvalue()
+    pdf_buffer.close()
+
+    resp = await s3.put_object(
+        Bucket=settings.S3_BUCKET_NAME_PDF,
+        Key=name_pdf,
+        Body=pdf_contents,
+        ContentLength=len(pdf_contents),
+        ContentType="application/pdf",
+        ACL='public-read'
+    )
 
 def split_img(combined_image: MatLike, name_image: str):
     """

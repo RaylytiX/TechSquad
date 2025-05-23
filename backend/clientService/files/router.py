@@ -4,12 +4,11 @@ from fastapi import APIRouter, BackgroundTasks, Depends, UploadFile, status
 from fastapi.responses import JSONResponse
 from authService.auth.utils import get_current_user
 from dbmodels.schemas import UserBase
-from .utils import save_file
 from configs.config import settings
-from dbmodels.database import db_dependency
+from dbmodels.database import db_dependency, s3_dependency
 from dbmodels.crud import create_file, find_file_by_id
 
-router = APIRouter()
+router = APIRouter()    
 
 @router.get("/{file_id}")
 async def get_path_file(file_id: str, background_tasks: BackgroundTasks, user: UserBase = Depends(get_current_user), db: db_dependency = db_dependency):
@@ -33,7 +32,7 @@ async def get_path_file(file_id: str, background_tasks: BackgroundTasks, user: U
     )
 
 @router.post("/")
-async def files_upload(background_tasks: BackgroundTasks, files: List[UploadFile], user: UserBase = Depends(get_current_user), db: db_dependency = db_dependency):
+async def files_upload(background_tasks: BackgroundTasks, files: List[UploadFile], user: UserBase = Depends(get_current_user), db: db_dependency = db_dependency, s3: s3_dependency = s3_dependency):
     if user is None or not user.is_active:
         return JSONResponse(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -48,15 +47,39 @@ async def files_upload(background_tasks: BackgroundTasks, files: List[UploadFile
                 content={
                     "message": f"Oops! This file {file.filename} is invalid file type, you can upload file with types: {', '.join(settings.APPLYLOADFORMATFILE)}"},
             )
+        
+        #path_to_image = await save_file(file=file)
 
-        path_to_image = await save_file(file=file)
-        if path_to_image is None:
+        contents = await file.read()
+        path_to_image = f"{uuid.uuid4().hex + '.' + file.filename.split('.')[-1].lower()}"
+
+        try:
+            resp = await s3.put_object(
+                Bucket=settings.S3_BUCKET_NAME_IMAGES,
+                Key=path_to_image,
+                Body=contents,
+                ContentLength=len(contents),
+                ContentType=file.content_type,
+                ACL='public-read'
+            )
+        except Exception as e:
+            print(e)
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={
                     "message": f"Oops! This file {file.filename} is bad. We can`t upload this file, please try upload again or change this file."},
             )
-        result = await create_file(path_to_file=path_to_image, user=user, db=db)
+        
+        url = settings.S3_PUBLIC_URL + "/" + settings.S3_BUCKET_NAME_IMAGES + "/" + path_to_image
+
+        # if path_to_image is None:
+        #     return JSONResponse(
+        #         status_code=status.HTTP_400_BAD_REQUEST,
+        #         content={
+        #             "message": f"Oops! This file {file.filename} is bad. We can`t upload this file, please try upload again or change this file."},
+        #     )
+
+        result = await create_file(path_to_file=url, user=user, db=db)
 
         file_ids.append(result.id.__str__())
 

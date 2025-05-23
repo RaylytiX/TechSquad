@@ -9,6 +9,16 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = ""
     LIMIT_ITEMS_PER_PAGE: int = 0
 
+    #S3
+    S3_SERVICE_NAME: str = ""
+    S3_ACCESS_KEY_ID: str = ""
+    S3_SECRET_ACCESS_KEY: str = ""
+    S3_REGION: str = ""
+    S3_ENDPOINT_URL: str = ""
+    S3_BUCKET_NAME_IMAGES: str = ""
+    S3_BUCKET_NAME_PDF: str = ""
+    S3_PUBLIC_URL: str = ""
+
     # Model Segmentation
     PATHTOMODEL: str = ""
 

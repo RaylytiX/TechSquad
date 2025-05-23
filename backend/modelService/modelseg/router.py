@@ -1,16 +1,20 @@
 from contextlib import asynccontextmanager
+import io
 import os
 import shutil
 import uuid
+import requests
 import cv2
 from fastapi import BackgroundTasks, Depends, FastAPI
 from fastapi.responses import JSONResponse
+import numpy as np
 import torch
+from PIL import Image
 from ultralytics import YOLO
 from authService.auth.utils import get_current_user
-from dbmodels.schemas import HistorFullResponseDB, UserBase, info_file, info_prediction, result_update
+from dbmodels.schemas import UserBase, info_file, info_prediction
 from dbmodels.crud import add_prediction_to_file, change_prediction, find_file_by_id
-from dbmodels.database import db_dependency
+from dbmodels.database import db_dependency, s3_dependency
 from fastapi import APIRouter, status
 from .utils import merge_and_create_pdf, processed_prediction, split_img
 from configs.config import settings
@@ -32,7 +36,7 @@ async def lifespan(app: FastAPI):
 router = APIRouter(lifespan=lifespan)
 
 @router.post("/predict")
-async def get_predict(info: info_file, background_tasks: BackgroundTasks, user: UserBase = Depends(get_current_user), db: db_dependency = db_dependency):
+async def get_predict(info: info_file, background_tasks: BackgroundTasks, user: UserBase = Depends(get_current_user), db: db_dependency = db_dependency, s3: s3_dependency = s3_dependency):
     if not user or not user.is_active:
         return JSONResponse(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -48,18 +52,28 @@ async def get_predict(info: info_file, background_tasks: BackgroundTasks, user: 
     dict_predict = {}
     for file in info.files_id:
         path_to_image = await find_file_by_id(id=file, db=db)
-        #old_images_list.append(Image.open(path_to_image))
         name_image = path_to_image.split("/")[-1].split(".")[0]
-        combined_image = cv2.imread(path_to_image)
-        path_images_list = split_img(combined_image=combined_image, name_image=name_image)
+        response = requests.get(path_to_image)
+        if response.status_code != 200:
+            return JSONResponse(
+                status_code=response.status_code,
+                content={"message": f"Failed to get image, status code: {response.status_code}"},
+            )
+        bytes_img = response.content
 
         try:
+            #image = await download_image_bytes(url=path_to_image)
+            combined_image = cv2.cvtColor(np.array(Image.open(io.BytesIO(bytes_img)).convert("RGB")), cv2.COLOR_RGB2BGR)
+            path_images_list = split_img(combined_image=combined_image, name_image=name_image)
             result = MODEL.predict(path_images_list, save=True, project="./runs")
-            #print(result[0])
+
             part_height, part_width, _ = combined_image.shape
             pred = processed_prediction(result, part_height, part_width)
             dict_predict[file.__str__()] = pred
-            output_pdf = f"..{settings.FILE_SAVE_FOLDER}/{uuid.uuid4().hex}.pdf"
+
+            #output_pdf = f"..{settings.FILE_SAVE_FOLDER}/{uuid.uuid4().hex}.pdf"
+            name_pdf = f"{uuid.uuid4().hex}.pdf"
+            output_pdf = f"{settings.S3_PUBLIC_URL}/{settings.S3_BUCKET_NAME_PDF}/{name_pdf}"
             pred["path_to_report"] = output_pdf
 
             background_tasks.add_task(
@@ -82,7 +96,8 @@ async def get_predict(info: info_file, background_tasks: BackgroundTasks, user: 
                 merge_and_create_pdf,
                 pred=pred,
                 input_dir=result[0].save_dir,
-                output_pdf=output_pdf
+                name_pdf=name_pdf,
+                s3=s3
             )
 
         except Exception as e:

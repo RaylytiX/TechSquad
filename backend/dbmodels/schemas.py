@@ -15,16 +15,6 @@ class info_prediction(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-class result_update(BaseModel):
-    file_id: UUID
-    user_id: UUID
-    masks: List[List[List[float]]]
-    boxes: List[List[float]]
-    num_classes: List[int]
-    classes: List[str]
-
-    model_config = ConfigDict(from_attributes=True)
-
 class UserBase(BaseModel):
     id: UUID
     email: EmailStr
@@ -44,9 +34,6 @@ class HistoryIdResponseDB(BaseModel):
     created_at: datetime
     updated_at: datetime
     model_config = ConfigDict(from_attributes=True)
-
-class AccessToken(BaseModel):
-    at: str
 
 class HistorFullResponseDB(BaseModel):
     user_id: UUID
