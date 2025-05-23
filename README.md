@@ -14,7 +14,7 @@
 
 📌 **Важно!** 
 > 1. Перед запуском **всех сервисов** настройте зависимости(**`.env`**), примерный файл лежит в [`configs/`](https://github.com/Serfetto/techsquad/tree/main/backend/configs)
-> 2. Перед запуском `modelService`, скачайте шрифт для генерации отчетов по [ссылке](https://drive.google.com/file/d/1xxvl2KyPHcil1-I7lEK1CkPAm5APblP-/view?usp=sharing) и поместите скачаный файл файл в директорию [`backend/`](https://github.com/Serfetto/techsquad/tree/main/backend)
+> 2. Перед запуском `modelService`, скачайте шрифт для генерации отчетов по [ссылке](https://drive.google.com/file/d/1xxvl2KyPHcil1-I7lEK1CkPAm5APblP-/view?usp=sharing) и поместите скачаный файл в директорию [`backend/`](https://github.com/Serfetto/techsquad/tree/main/backend)
 > 3. Перед запуском `modelService`, скачайте модель по [ссылке](https://drive.google.com/file/d/1o-8-9i3Aa5lpI3hzjGHHf4MdHv2VBV_o/view?usp=sharing) и поместите файл в директорию [`configs/`](https://github.com/Serfetto/techsquad/tree/main/backend/configs)
 
 ---
@@ -84,6 +84,10 @@ npm run dev
 > - Скопируйте файл `.env-docker` из [`backend/configs/`](https://github.com/Serfetto/techsquad/tree/main/backend/configs) и переименуйте его в `.env`.
 > - Скопируйте файл `vite.config-docker.js` из [`frontend/`](https://github.com/Serfetto/techsquad/tree/main/frontend/) и переименуйте его в `vite.config.js`.
 >
+> 🛠️ Скачать шрифт с кирилицей
+> - Скачайте шрифт для генерации отчетов по [ссылке](https://drive.google.com/file/d/1xxvl2KyPHcil1-I7lEK1CkPAm5APblP-/view?usp=sharing)
+> - Поместить скачаный файл в директорию [`backend/`](https://github.com/Serfetto/techsquad/tree/main/backend)
+> 
 > 🤖 Подготовить модель для `modelService`:
 > - Скачайте предобученную модель по [ссылке](https://drive.google.com/file/d/1o-8-9i3Aa5lpI3hzjGHHf4MdHv2VBV_o/view?usp=sharing)
 > - Поместите файл модели в директорию [`configs/`](https://github.com/Serfetto/techsquad/tree/main/backend/configs)
