@@ -29,8 +29,8 @@ async def signup(info_user: UserAuth, background_tasks: BackgroundTasks, db: db_
     db_user = await get_user_by_email(str(info_user.email), db)
     if db_user:
         raise HTTPException(status_code=400, detail="Почта уже зарегестрирована")
-    if len(info_user.password) < 8 or len(info_user.password) > 30:
-        raise HTTPException(status_code=400, detail="Пароль должен быть больше чем 8 символов и меньше чем 30 символов")
+    # if len(info_user.password) < 8 or len(info_user.password) > 30:
+    #     raise HTTPException(status_code=400, detail="Пароль должен быть больше чем 8 символов и меньше чем 30 символов")
     hashed_password = get_password_hash(info_user.password)
     db_user = await create_user(info_user.email.__str__(), hashed_password, True, db)
     access_token = create_token(data={"sub": str(db_user.id)}, expire_time=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))

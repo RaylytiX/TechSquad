@@ -6,11 +6,12 @@ from cv2.typing import MatLike
 from configs.config import settings
 from PIL import Image
 import os
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
-from reportlab.lib.utils import ImageReader
-from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.pdfbase import pdfmetrics
+# from reportlab.lib.pagesizes import letter
+# from reportlab.pdfgen import canvas
+# from reportlab.lib.utils import ImageReader
+# from reportlab.pdfbase.ttfonts import TTFont
+# from reportlab.pdfbase import pdfmetrics
+from fpdf import FPDF, XPos, YPos
 from configs.config import settings
 from dbmodels.database import s3_dependency
 
@@ -31,13 +32,7 @@ from dbmodels.database import s3_dependency
 #             content={"message": f"Ошибка при скачивании изображения: {str(e)}"}
 #         )
 
-async def merge_and_create_pdf(pred, input_dir, name_pdf, s3: s3_dependency):
-    text=""
-    for v,k in zip(pred["classes"], pred["confs"]):
-        text = text+f"{v}<---->{k}\n"
-    text=text+f"Название класса<---->Точность предсказания\n\nДата:{datetime.now()}\n\nРезультат обработки изображений\n"
-
-    # Склеиваем изображения
+def merge_images(input_dir):
     valid_extensions = {'.jpg', '.jpeg', '.png'}
     files = [f for f in os.listdir(input_dir) 
             if os.path.splitext(f)[1].lower() in valid_extensions]
@@ -59,41 +54,55 @@ async def merge_and_create_pdf(pred, input_dir, name_pdf, s3: s3_dependency):
     for img in images:
         merged_image.paste(img, (x_offset, 0))
         x_offset += img.width
-    
-    pdf_buffer = io.BytesIO()
-    c = canvas.Canvas(pdf_buffer, pagesize=letter)
-    width, height = letter
-    
-    # Регистрируем русский шрифт
-    try:
-        pdfmetrics.registerFont(TTFont('Arial', 'arial.ttf'))
-    except Exception:
-        pdfmetrics.registerFont(TTFont('Arial', 'DejaVuSans.ttf'))
-    c.setFont("Arial", 12)
 
-    # Добавляем изображение (масштабируем под ширину страницы)
-    img_reader = ImageReader(merged_image)
+    return merged_image
+
+def gen_pdf(pred, merged_image: Image):
+    pdf = FPDF(orientation='L', unit='mm', format='A4')
+
+    pdf.add_font(fname="DejaVuSans.ttf")
+    pdf.set_font(family="DejaVuSans", size=12)
+    pdf.add_page()
+
+    max_img_height = pdf.h - pdf.t_margin - pdf.b_margin - 20 
     img_width, img_height = merged_image.size
-    scale = (width - 100) / img_width  # оставляем поля по 50 точек с каждой стороны
-    c.drawImage(img_reader, 50, height - 50 - img_height*scale, 
-               width=img_width*scale, height=img_height*scale)
+    aspect_ratio = img_width / img_height
 
-    # Добавляем текст под изображением
-    text_lines = text.split('\n')
-    text_height = len(text_lines) * 14
-    y_position = height - 60 - img_height*scale - text_height
+    new_width = pdf.w - pdf.l_margin - pdf.r_margin
+    new_height = new_width / aspect_ratio
+
+    if new_height > max_img_height:
+        new_height = max_img_height
+        new_width = new_height * aspect_ratio
+
+    pdf.image(merged_image, x=pdf.l_margin, y=pdf.t_margin, w=new_width, h=new_height)
+
+    pdf.set_y(pdf.t_margin + new_height + 5)
+
+    text_lines = [
+        "Результат обработки изображений",
+        f"Дата: {datetime.now()}",
+        "Название класса<---->Точность предсказания"
+    ]
+    for v, k in zip(pred["classes"], pred["confs"]):
+        text_lines.append(f"{v}<---->{k}")
 
     for line in text_lines:
-        c.drawString(50, y_position, line)
-        y_position += 14
+        pdf.cell(0, 10, text=line, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
 
-    c.save()
-    
-    # Получаем содержимое PDF из буфера
+    pdf_buffer = io.BytesIO()
+    pdf.output(pdf_buffer)
     pdf_buffer.seek(0)
     pdf_contents = pdf_buffer.getvalue()
     pdf_buffer.close()
+    return pdf_contents
 
+async def merge_and_create_pdf(pred, input_dir, name_pdf, s3: s3_dependency):
+    print("Merging images")
+    merged_image = merge_images(input_dir)
+    print("Generate PDF")
+    pdf_contents = gen_pdf(pred, merged_image)
+    print(f"Sending to S3 generated PDF({name_pdf})")
     resp = await s3.put_object(
         Bucket=settings.S3_BUCKET_NAME_PDF,
         Key=name_pdf,
@@ -102,6 +111,8 @@ async def merge_and_create_pdf(pred, input_dir, name_pdf, s3: s3_dependency):
         ContentType="application/pdf",
         ACL='public-read'
     )
+    await s3.close()
+    
 
 def split_img(combined_image: MatLike, name_image: str):
     """

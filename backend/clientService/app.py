@@ -6,12 +6,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from dbmodels.database import engine, Base
 from .client.router import router as client_router
 from .files.router import router as files_router
-from .healthcheckerclient import router as health_router
 from configs.config import settings
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    os.makedirs(".."+settings.FILE_SAVE_FOLDER, exist_ok=True)
+    #os.makedirs(".."+settings.FILE_SAVE_FOLDER, exist_ok=True)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     yield
@@ -27,7 +26,6 @@ app.add_middleware(
     allow_credentials=settings.CREDENTIALS
 )
 
-app.include_router(health_router, tags=["health"], prefix="/ping")
 app.include_router(client_router, tags=["client"], prefix="/client")
 app.include_router(files_router, tags=["file"], prefix="/client/file")
 

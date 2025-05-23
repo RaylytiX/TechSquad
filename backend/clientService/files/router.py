@@ -62,6 +62,7 @@ async def files_upload(background_tasks: BackgroundTasks, files: List[UploadFile
                 ContentType=file.content_type,
                 ACL='public-read'
             )
+            await s3.close()
         except Exception as e:
             print(e)
             return JSONResponse(

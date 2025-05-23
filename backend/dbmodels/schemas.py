@@ -17,7 +17,7 @@ class info_prediction(BaseModel):
 
 class UserBase(BaseModel):
     id: UUID
-    email: EmailStr
+    email: str
     is_active: bool
     created_at: datetime
     updated_at: datetime
@@ -25,7 +25,7 @@ class UserBase(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 class UserAuth(BaseModel):
-    email: EmailStr
+    email: str
     password: str
 
 class HistoryIdResponseDB(BaseModel):

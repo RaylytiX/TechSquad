@@ -88,7 +88,7 @@ async def get_predict(info: info_file, background_tasks: BackgroundTasks, user: 
                 path_to_report=output_pdf,
                 db=db
             )
-
+            print("Remove splited images")
             for file_path in path_images_list:
                 background_tasks.add_task(os.remove, file_path)
 
@@ -105,6 +105,7 @@ async def get_predict(info: info_file, background_tasks: BackgroundTasks, user: 
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={"message": f"Prediction failed: {str(e)}"},
             )
+    print("Remove result from model")
     background_tasks.add_task(shutil.rmtree, result[0].save_dir, ignore_errors=True)
     return JSONResponse(
         status_code=status.HTTP_200_OK,

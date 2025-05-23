@@ -2,11 +2,9 @@ from fastapi import FastAPI
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 from authService.auth.router import router as auth_router
-from .healthcheckercauth import router as health_router
 from configs.config import settings
 
 app = FastAPI(title="AuthService")
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins = settings.HOSTS,
@@ -14,8 +12,6 @@ app.add_middleware(
     allow_headers = settings.HEADERS,
     allow_credentials=settings.CREDENTIALS
 )
-
-app.include_router(health_router, tags=["health"], prefix="/ping")
 app.include_router(auth_router, tags=["auth"], prefix="/auth")
 
 if __name__ == "__main__":
