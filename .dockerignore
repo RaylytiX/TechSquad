@@ -3,7 +3,6 @@
 .idea
 .git
 **/__pycache__
-**/public
 **/.venv
 **/node_modules
 **/Dockerfile
