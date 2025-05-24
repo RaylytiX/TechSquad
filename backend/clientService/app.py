@@ -10,7 +10,7 @@ from configs.config import settings
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    #os.makedirs(".."+settings.FILE_SAVE_FOLDER, exist_ok=True)
+    os.makedirs(".."+settings.FILE_SAVE_FOLDER, exist_ok=True)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     yield
