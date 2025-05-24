@@ -48,8 +48,6 @@ const Profile: React.FC = () => {
   const [classColors, setClassColors] = useState<{ [key: string]: string }>({});
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const debugImageRef = useRef<HTMLImageElement>(null);
-  const [pdfViewerOpen, setPdfViewerOpen] = useState<boolean>(false);
-  const [pdfUrl, setPdfUrl] = useState<string>("");
 
   const fetchUserData = async () => {
     setIsLoading(true);
@@ -307,7 +305,6 @@ const Profile: React.FC = () => {
       if (response.data) {
         console.log("History details response:", response.data);
         console.log("PDF report path:", response.data.path_to_report);
-        setPdfUrl(response.data.path_to_report);
         setSelectedHistory(response.data);
 
         await fetchImagePath(fileId);
@@ -321,36 +318,6 @@ const Profile: React.FC = () => {
       } else {
         setError("Ошибка при загрузке деталей истории");
       }
-    }
-  };
-
-  // Replace the downloadPdfReport function
-  const downloadPdfReport = (reportPath: string) => {
-    try {
-      if (!reportPath) {
-        setError("URL отчета не найден");
-        return;
-      }
-
-      console.log("Подготовка к скачиванию отчета:", reportPath);
-
-      // Create an anchor element
-      const link = document.createElement("a");
-      link.href = reportPath;
-
-      // Suggest a filename (optional, browser might override)
-      // Extracting filename from URL, e.g., "70bfbbf32345460e97897e4e784b53a7.pdf"
-      const filename =
-        reportPath.substring(reportPath.lastIndexOf("/") + 1) || "report.pdf";
-      link.setAttribute("download", filename);
-
-      // Append to the document, click, and remove
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (err) {
-      console.error("Ошибка при скачивании отчета:", err);
-      setError("Ошибка при скачивании отчета");
     }
   };
 
@@ -368,11 +335,6 @@ const Profile: React.FC = () => {
       console.error("Ошибка при открытии отчета:", err);
       setError("Ошибка при открытии отчета");
     }
-  };
-
-  const closePdfViewer = () => {
-    setPdfViewerOpen(false);
-    setPdfUrl(""); // Reset to empty string as per its new type
   };
 
   if (isLoading) {
@@ -701,10 +663,10 @@ const Profile: React.FC = () => {
                   <p className="text-sm text-gray-500">Отчет</p>
                   <div className="flex space-x-2">
                     <button
-                      className="text-blue-600 hover:text-blue-800 font-medium flex items-center"
+                      className="text-green-600 hover:text-green-800 font-medium flex items-center"
                       onClick={() => {
-                        if (pdfUrl) {
-                          downloadPdfReport(pdfUrl);
+                        if (selectedHistory?.path_to_report) {
+                          viewPdfInBrowser(selectedHistory.path_to_report);
                         } else {
                           setError("URL отчета не найден");
                         }
@@ -795,56 +757,6 @@ const Profile: React.FC = () => {
           )}
         </div>
       </div>
-
-      {pdfViewerOpen && pdfUrl && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4">
-          <div className="relative bg-white rounded-lg w-full max-w-6xl h-5/6 flex flex-col">
-            <div className="flex justify-between items-center p-4 border-b">
-              <h3 className="text-xl font-semibold">Просмотр отчета</h3>
-              <button
-                onClick={closePdfViewer}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
-            <div className="flex-grow p-1 overflow-hidden">
-              <iframe
-                src={pdfUrl}
-                className="w-full h-full border-0"
-                title="PDF Report"
-              />
-            </div>
-            <div className="p-4 border-t flex justify-between">
-              <button
-                onClick={closePdfViewer}
-                className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
-              >
-                Закрыть
-              </button>
-              <button
-                onClick={() => downloadPdfReport(pdfUrl)}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                Скачать
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
