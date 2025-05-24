@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 
-// Define the structure of the annotations if it's different or more detailed for editing
-// For now, we'll assume it's similar to SelectedHistoryItem for masks, boxes, classes
 interface Point {
   x: number;
   y: number;
@@ -22,36 +20,34 @@ interface MovingPointInfo {
 interface Annotation {
   id: string;
   type: "box" | "mask";
-  coordinates: number[]; // [x1, y1, x2, y2] for boxes, array of [x,y] points for masks
+  coordinates: number[];
   class_name: string;
 }
 
 interface SelectedHistoryItem {
   user_id: string;
   file_id: string;
-  masks: number[][]; // Array of masks, each mask is an array of [x,y] points
-  boxes: number[][]; // Array of boxes, each box is [x1,y1,x2,y2]
-  classes: string[]; // Array of class names corresponding to each mask/box
-  num_classes: number[]; // Array of numerical class IDs
-  ind_cls: { [key: string]: string }; // Map of numerical ID to class name
+  masks: number[][];
+  boxes: number[][];
+  classes: string[];
+  num_classes: number[];
+  ind_cls: { [key: string]: string };
   confs: number[];
   created_at: string;
   updated_at: string;
-  path_to_report: string; // This is for the PDF report, not the image itself
+  path_to_report: string;
 }
 
 interface AnnotationEditorModalProps {
   isOpen: boolean;
   onClose: () => void;
   historyItem: SelectedHistoryItem | null;
-  imageSrc: string | null; // The actual source URL of the image to annotate
-  onSave?: (updatedAnnotations: any) => void; // Add callback for successful save
+  imageSrc: string | null;
+  onSave?: (updatedAnnotations: any) => void;
 }
 
-// Use relative paths for API URLs
 const MODEL_URL = `/model`;
 
-// Helper function to validate UUID
 const isValidUUID = (uuid: string) => {
   const uuidRegex =
     /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -73,23 +69,22 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [isDraggingImage, setIsDraggingImage] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 }); // For panning image
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [selectedTool, setSelectedTool] = useState<
     "select" | "drawBox" | "drawMask" | "pan"
   >("pan");
-  const [isDrawing, setIsDrawing] = useState(false); // For drawing new shapes
-  const [currentDrawing, setCurrentDrawing] = useState<any>(null); // Data for shape being drawn
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [currentDrawing, setCurrentDrawing] = useState<any>(null);
   const [selectedAnnotationId, setSelectedAnnotationId] = useState<
     string | null
   >(null);
 
-  // States for moving existing annotations
   const [isMovingAnnotation, setIsMovingAnnotation] = useState(false);
   const [movingAnnotationInfo, setMovingAnnotationInfo] = useState<{
     id: string;
-    initialBoxCoords: number[]; // For boxes [x1, y1, x2, y2]
-    startMouseX: number; // Mouse X in image space at move start
-    startMouseY: number; // Mouse Y in image space at move start
+    initialBoxCoords: number[];
+    startMouseX: number;
+    startMouseY: number;
   } | null>(null);
   const [hoveredAnnotationId, setHoveredAnnotationId] = useState<string | null>(
     null
@@ -101,7 +96,6 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
   const [maskPoints, setMaskPoints] = useState<MaskPoint[]>([]);
   const [isPointMoving, setIsPointMoving] = useState(false);
 
-  // Load image and initial annotations
   useEffect(() => {
     if (isOpen && imageSrc && historyItem) {
       const img = new Image();
@@ -109,10 +103,8 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
       img.onload = () => {
         setImageElement(img);
 
-        // Convert historyItem data to annotations array
         const initialAnnotations: Annotation[] = [];
 
-        // Add boxes
         historyItem.boxes.forEach((box, index) => {
           if (box && box.length === 4) {
             const className = historyItem.classes[index];
@@ -127,7 +119,6 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
           }
         });
 
-        // Add masks
         historyItem.masks.forEach((mask, index) => {
           if (mask && mask.length > 0) {
             const className =
@@ -171,14 +162,12 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
     }
   };
 
-  // Drawing logic (canvas updates)
   useEffect(() => {
     if (!isOpen || !canvasRef.current || !imageElement) return;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Set canvas size to match image
     canvas.width = imageElement.width;
     canvas.height = imageElement.height;
 
@@ -187,10 +176,8 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
     ctx.translate(offset.x, offset.y);
     ctx.scale(scale, scale);
 
-    // Draw image
     ctx.drawImage(imageElement, 0, 0);
 
-    // Draw annotations
     annotations.forEach((ann) => {
       const isSelected = ann.id === selectedAnnotationId;
       const isHovered =
@@ -230,7 +217,6 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
           });
         }
 
-        // Draw lines between points
         ctx.beginPath();
         ctx.moveTo(points[0].x, points[0].y);
         for (let i = 1; i < points.length; i++) {
@@ -238,12 +224,10 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
         }
         ctx.closePath();
 
-        // Set styles based on selection state
         ctx.strokeStyle = isSelected ? "blue" : isHovered ? "orange" : "red";
         ctx.lineWidth = (isSelected ? 2 : 1) / scale;
         ctx.stroke();
 
-        // Draw points
         points.forEach((point, index) => {
           ctx.beginPath();
           ctx.arc(point.x, point.y, 3 / scale, 0, Math.PI * 2);
@@ -252,14 +236,12 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
           ctx.stroke();
         });
 
-        // Draw label
         ctx.fillStyle = isSelected ? "blue" : isHovered ? "orange" : "red";
         ctx.font = `${12 / scale}px Arial`;
         ctx.fillText(ann.class_name, points[0].x, points[0].y - 5 / scale);
       }
     });
 
-    // Draw current drawing preview
     if (isDrawing && currentDrawing) {
       ctx.strokeStyle = "green";
       ctx.lineWidth = 2 / scale;
@@ -276,9 +258,7 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
       ctx.setLineDash([]);
     }
 
-    // Draw current mask preview if drawing
     if (isDrawing && selectedTool === "drawMask" && maskPoints.length > 0) {
-      // Draw lines between points
       ctx.beginPath();
       ctx.moveTo(maskPoints[0].x, maskPoints[0].y);
       maskPoints.forEach((point, index) => {
@@ -287,7 +267,6 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
         }
       });
 
-      // Draw points
       maskPoints.forEach((point) => {
         ctx.beginPath();
         ctx.arc(point.x, point.y, 3 / scale, 0, Math.PI * 2);
@@ -319,32 +298,62 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
     try {
       setIsSaving(true);
 
-      // Validate file_id is a valid UUID
       if (!isValidUUID(historyItem.file_id)) {
         throw new Error("Invalid file ID format. Expected UUID.");
       }
 
-      // Prepare data in the format expected by the server
       const updatedBoxes: number[][] = [];
-      const updatedMasks: number[][][] = [];
+      const updatedMasks: number[][] = [];
       const updatedClasses: string[] = [];
       const updatedNumClasses: number[] = [];
 
-      // Sort annotations by type and extract data
+      if (historyItem.masks && Array.isArray(historyItem.masks)) {
+        historyItem.masks.forEach((mask: number[], index: number) => {
+          const isEdited = annotations.some(
+            (ann) =>
+              ann.type === "mask" &&
+              ann.coordinates.length === mask.length &&
+              ann.coordinates.every((coord, i) => coord === mask[i])
+          );
+
+          if (!isEdited) {
+            updatedMasks.push(mask);
+            if (historyItem.classes && index < historyItem.classes.length) {
+              updatedClasses.push(historyItem.classes[index]);
+              updatedNumClasses.push(index);
+            }
+          }
+        });
+      }
+
+      if (historyItem.boxes && Array.isArray(historyItem.boxes)) {
+        historyItem.boxes.forEach((box: number[], index: number) => {
+          const isEdited = annotations.some(
+            (ann) =>
+              ann.type === "box" &&
+              ann.coordinates.length === box.length &&
+              ann.coordinates.every((coord, i) => coord === box[i])
+          );
+
+          if (!isEdited) {
+            updatedBoxes.push(box);
+            if (historyItem.classes && index < historyItem.classes.length) {
+              updatedClasses.push(historyItem.classes[index]);
+              updatedNumClasses.push(index);
+            }
+          }
+        });
+      }
+
       annotations.forEach((ann, index) => {
         if (ann.type === "box") {
           updatedBoxes.push(ann.coordinates);
           updatedClasses.push(ann.class_name);
-          updatedNumClasses.push(index);
+          updatedNumClasses.push(updatedBoxes.length - 1);
         } else if (ann.type === "mask") {
-          // Преобразуем координаты маски в правильный формат
-          const points: number[][] = [];
-          for (let i = 0; i < ann.coordinates.length; i += 2) {
-            points.push([ann.coordinates[i], ann.coordinates[i + 1]]);
-          }
-          updatedMasks.push(points);
+          updatedMasks.push(ann.coordinates);
           updatedClasses.push(ann.class_name);
-          updatedNumClasses.push(index);
+          updatedNumClasses.push(updatedMasks.length - 1);
         }
       });
 
@@ -360,40 +369,8 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
 
       console.log("Saving annotations:", payload);
 
-      const response = await axios.patch(
-        `${MODEL_URL}/update_predict`,
-        payload,
-        {
-          withCredentials: true,
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          validateStatus: function (status) {
-            return status >= 200 && status < 500; // Принимаем все статусы от 200 до 499
-          },
-        }
-      );
-
-      if (response.status === 401) {
-        throw new Error("Unauthorized: Please log in again");
-      }
-
-      if (response.data) {
-        console.log("Annotations saved successfully:", response.data);
-        // Передаем обновленные данные обратно в родительский компонент
-        onSave?.({
-          ...response.data,
-          file_id: historyItem.file_id,
-          user_id: historyItem.user_id,
-          created_at: historyItem.created_at,
-          updated_at: new Date().toISOString(),
-          path_to_report: historyItem.path_to_report,
-        });
-        onClose();
-      } else {
-        throw new Error("Empty response from server");
-      }
+      onSave?.(payload);
+      onClose();
     } catch (error) {
       console.error("Error saving annotations:", error);
       if (error instanceof Error) {
@@ -440,7 +417,6 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
       setSelectedAnnotationId(null);
       setIsMovingAnnotation(false);
     } else if (selectedTool === "drawBox") {
-      // Validate if we can draw here
       if (!canDrawAtPosition(mouseX, mouseY)) {
         alert("В этой области нельзя рисовать разметку");
         return;
@@ -456,7 +432,6 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
       setSelectedAnnotationId(null);
       setIsMovingAnnotation(false);
     } else if (selectedTool === "drawMask") {
-      // Validate if we can draw here
       if (!canDrawAtPosition(mouseX, mouseY)) {
         alert("В этой области нельзя рисовать разметку");
         return;
@@ -465,7 +440,6 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
       const newPoint: MaskPoint = { x: mouseX, y: mouseY };
       setMaskPoints((prev) => [...prev, newPoint]);
     } else if (selectedTool === "select") {
-      // Check for mask points first
       const pointInfo = findMaskPointAtPosition(mouseX, mouseY);
       if (pointInfo) {
         setIsPointMoving(true);
@@ -477,7 +451,6 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
         return;
       }
 
-      // Existing box selection logic
       let hitAnnotation: Annotation | null = null;
       for (let i = annotations.length - 1; i >= 0; i--) {
         const ann = annotations[i];
@@ -513,7 +486,6 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
     const { x: currentMouseX, y: currentMouseY } = getMousePosInImageSpace(e);
 
     if (isPointMoving && selectedMaskPoint) {
-      // Move the selected point
       const { maskId, pointIndex } = selectedMaskPoint;
       setAnnotations((prevAnnotations) =>
         prevAnnotations.map((ann) => {
@@ -527,7 +499,6 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
         })
       );
     } else if (isDraggingImage && selectedTool === "pan") {
-      // Existing pan logic
       const canvas = canvasRef.current;
       if (!canvas) return;
       const rect = canvas.getBoundingClientRect();
@@ -536,7 +507,6 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
         y: e.clientY - rect.top - dragStart.y,
       });
     } else if (isDrawing && selectedTool === "drawBox" && currentDrawing) {
-      // Existing box drawing logic
       setCurrentDrawing({
         ...currentDrawing,
         x2: currentMouseX,
@@ -565,7 +535,6 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
       const deltaX = currentMouseX - startMouseX;
       const deltaY = currentMouseY - startMouseY;
 
-      // Update box position
       const newX1 = initialBoxCoords[0] + deltaX;
       const newY1 = initialBoxCoords[1] + deltaY;
       const newX2 = initialBoxCoords[2] + deltaX;
@@ -579,7 +548,6 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
         )
       );
     } else if (selectedTool === "select" && !isDrawing && !isMovingAnnotation) {
-      // Update hover state
       let newHoveredId: string | null = null;
       for (let i = annotations.length - 1; i >= 0; i--) {
         const ann = annotations[i];
@@ -595,7 +563,6 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
             break;
           }
         }
-        // TODO: Hover detection for masks
       }
       if (hoveredAnnotationId !== newHoveredId) {
         setHoveredAnnotationId(newHoveredId);
@@ -610,7 +577,6 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
     } else if (isDraggingImage) {
       setIsDraggingImage(false);
     } else if (isDrawing && selectedTool === "drawBox" && currentDrawing) {
-      // Existing box completion logic
       setIsDrawing(false);
       const width = Math.abs(currentDrawing.x2 - currentDrawing.x1);
       const height = Math.abs(currentDrawing.y2 - currentDrawing.y1);
@@ -661,7 +627,7 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
   };
 
   const handleMouseLeave = () => {
-    handleMouseUp(); // Clean up any ongoing operations
+    handleMouseUp();
     setHoveredAnnotationId(null);
   };
 
@@ -686,7 +652,7 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
     setSelectedTool(tool);
     setIsDrawing(false);
     setIsMovingAnnotation(false);
-    // Keep selection if switching to select tool, otherwise clear it
+
     if (tool !== "select") {
       setSelectedAnnotationId(null);
     }
@@ -703,15 +669,12 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
 
-    // Calculate mouse position in canvas coordinate system before zoom
     const mouseXInCanvas = (mouseX - offset.x) / scale;
     const mouseYInCanvas = (mouseY - offset.y) / scale;
 
-    // Calculate new scale
     const newScale = e.deltaY < 0 ? scale * scaleAmount : scale / scaleAmount;
     const clampedScale = Math.max(0.1, Math.min(newScale, 10));
 
-    // Calculate new offset to keep mouse position fixed
     const newOffsetX = mouseX - mouseXInCanvas * clampedScale;
     const newOffsetY = mouseY - mouseYInCanvas * clampedScale;
 
@@ -719,7 +682,6 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
     setOffset({ x: newOffsetX, y: newOffsetY });
   };
 
-  // Function to check if drawing is allowed at position
   const canDrawAtPosition = (x: number, y: number): boolean => {
     if (!imageElement || !canvasRef.current) return false;
 
@@ -727,15 +689,12 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
     const ctx = canvas.getContext("2d");
     if (!ctx) return false;
 
-    // Get pixel data at the point
     const pixel = ctx.getImageData(x, y, 1, 1).data;
 
-    // Check if pixel is not completely black or white
     const brightness = (pixel[0] + pixel[1] + pixel[2]) / 3;
     return brightness > 20 && brightness < 235;
   };
 
-  // Function to check if a point is near mouse position
   const isNearPoint = (
     x: number,
     y: number,
@@ -748,7 +707,6 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
     return distance < 5 / scale;
   };
 
-  // Function to find mask point under cursor
   const findMaskPointAtPosition = (x: number, y: number) => {
     for (const ann of annotations) {
       if (ann.type === "mask") {

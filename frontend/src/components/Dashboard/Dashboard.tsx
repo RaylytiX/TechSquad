@@ -101,13 +101,24 @@ const Dashboard: React.FC = () => {
 
       ctx.drawImage(img, 0, 0, img.width, img.height);
 
+      console.log("Drawing masks:", {
+        showMasks,
+        masks: analysisResult.masks,
+        classes: analysisResult.classes,
+        classColors,
+      });
+
       if (
         showMasks &&
         analysisResult.masks &&
+        Array.isArray(analysisResult.masks) &&
         analysisResult.masks.length > 0
       ) {
-        analysisResult.masks.forEach((mask: number[][], index: number) => {
+        analysisResult.masks.forEach((mask: any, index: number) => {
+          console.log("Processing mask:", { mask, index });
+
           if (
+            mask &&
             mask.length > 0 &&
             analysisResult.classes &&
             index < analysisResult.classes.length
@@ -137,11 +148,22 @@ const Dashboard: React.FC = () => {
               );
 
             ctx.beginPath();
-            ctx.moveTo(mask[0][0], mask[0][1]);
 
-            for (let i = 1; i < mask.length; i++) {
-              ctx.lineTo(mask[i][0], mask[i][1]);
+            // Проверяем формат маски
+            if (Array.isArray(mask[0])) {
+              // Если маска в формате [[x1,y1], [x2,y2], ...]
+              ctx.moveTo(mask[0][0], mask[0][1]);
+              for (let i = 1; i < mask.length; i++) {
+                ctx.lineTo(mask[i][0], mask[i][1]);
+              }
+            } else {
+              // Если маска в формате [x1,y1,x2,y2,...]
+              ctx.moveTo(mask[0], mask[1]);
+              for (let i = 2; i < mask.length; i += 2) {
+                ctx.lineTo(mask[i], mask[i + 1]);
+              }
             }
+
             ctx.closePath();
             ctx.fillStyle = rgbaFill;
             ctx.fill();
@@ -279,16 +301,42 @@ const Dashboard: React.FC = () => {
   const handleSaveAnnotations = async (updatedAnnotations: any) => {
     if (currentFileId) {
       try {
-        // Обновляем результаты анализа с новыми данными
-        const formattedResult = {
-          ...updatedAnnotations,
-          file_id: currentFileId,
-          user_id: updatedAnnotations.user_id || "",
-          created_at: updatedAnnotations.created_at || new Date().toISOString(),
-          updated_at: updatedAnnotations.updated_at || new Date().toISOString(),
-          path_to_report: updatedAnnotations.path_to_report || "",
-        };
-        setAnalysisResult(formattedResult);
+        console.log("Saving annotations:", updatedAnnotations);
+
+        // Сначала отправляем обновленные аннотации на сервер
+        const response = await axios.patch(
+          `${MODEL_URL}/update_predict`,
+          updatedAnnotations,
+          {
+            withCredentials: true,
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+          }
+        );
+
+        console.log("Server response:", response.data);
+
+        if (response.data) {
+          // Форматируем данные для отображения
+          const formattedResult = {
+            ...response.data,
+            file_id: currentFileId,
+            user_id: response.data.user_id || "",
+            created_at: response.data.created_at || new Date().toISOString(),
+            updated_at: response.data.updated_at || new Date().toISOString(),
+            path_to_report: response.data.path_to_report || "",
+          };
+
+          console.log("Formatted result:", formattedResult);
+          setAnalysisResult(formattedResult);
+
+          // Перерисовываем канвас с новыми данными
+          if (preview && Object.keys(classColors).length > 0) {
+            drawPointsOnCanvas();
+          }
+        }
       } catch (err) {
         console.error("Error updating analysis results:", err);
         setError("Ошибка при обновлении результатов анализа");

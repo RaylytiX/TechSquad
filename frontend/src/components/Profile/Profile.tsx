@@ -161,14 +161,11 @@ const Profile: React.FC = () => {
     }
   };
 
-  // Функция для получения цвета класса
   const getColorForClass = (className: string, classIndex: number) => {
-    // Если для класса уже назначен цвет, используем его
     if (classColors[className]) {
       return classColors[className];
     }
 
-    // Иначе генерируем новый цвет и сохраняем его
     const hue = (classIndex * 137) % 360;
     const color = `hsl(${hue}, 70%, 50%)`;
 
@@ -220,7 +217,7 @@ const Profile: React.FC = () => {
           const className = selectedHistory.classes[index];
           const classIndex = selectedHistory.num_classes[index];
           const color = getColorForClass(className, classIndex);
-          // Извлекаем hue из color строки безопасным способом
+
           const hueMatch = color.match(/\d+/);
           const hue = hueMatch ? hueMatch[0] : "0";
           const rgbaFill = `hsla(${hue}, 70%, 50%, 0.3)`;
@@ -321,7 +318,6 @@ const Profile: React.FC = () => {
     }
   };
 
-  // Replace the viewPdfInBrowser function
   const viewPdfInBrowser = (reportPath: string) => {
     try {
       if (!reportPath) {
@@ -603,7 +599,7 @@ const Profile: React.FC = () => {
                       console.log("filename", filename);
                       if (filename) {
                         console.log("Trying alternative path for image");
-                        // Try a different approach to load the image - direct from the media folder
+
                         const simplePath = `/media/${filename
                           .split("/")
                           .pop()}`;
