@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
+import AnnotationEditorModal from "../AnnotationEditorModal/AnnotationEditorModal";
 
 const CLIENT_URL = `/client`;
 const MODEL_URL = `/model`;
@@ -46,6 +47,8 @@ const Dashboard: React.FC = () => {
   const [showMasks, setShowMasks] = useState<boolean>(true);
   const [showBoxes, setShowBoxes] = useState<boolean>(true);
   const [classColors, setClassColors] = useState<Record<string, string>>({});
+  const [isEditorOpen, setIsEditorOpen] = useState<boolean>(false);
+  const [currentFileId, setCurrentFileId] = useState<string | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -223,6 +226,8 @@ const Dashboard: React.FC = () => {
       }
 
       const fileIds = uploadResponse.data.files;
+      const fileId = fileIds[0];
+      setCurrentFileId(fileId);
 
       const predictResponse = await axios.post(
         `${MODEL_URL}/predict`,
@@ -235,9 +240,16 @@ const Dashboard: React.FC = () => {
       );
 
       if (predictResponse.data) {
-        const fileId = fileIds[0];
         if (predictResponse.data[fileId]) {
-          setAnalysisResult(predictResponse.data[fileId]);
+          const formattedResult = {
+            ...predictResponse.data[fileId],
+            file_id: fileId,
+            user_id: predictResponse.data[fileId].user_id || "",
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            path_to_report: predictResponse.data[fileId].path_to_report || "",
+          };
+          setAnalysisResult(formattedResult);
 
           try {
             const mediaFormData = new FormData();
@@ -261,6 +273,26 @@ const Dashboard: React.FC = () => {
       }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSaveAnnotations = async (updatedAnnotations: any) => {
+    if (currentFileId) {
+      try {
+        // Обновляем результаты анализа с новыми данными
+        const formattedResult = {
+          ...updatedAnnotations,
+          file_id: currentFileId,
+          user_id: updatedAnnotations.user_id || "",
+          created_at: updatedAnnotations.created_at || new Date().toISOString(),
+          updated_at: updatedAnnotations.updated_at || new Date().toISOString(),
+          path_to_report: updatedAnnotations.path_to_report || "",
+        };
+        setAnalysisResult(formattedResult);
+      } catch (err) {
+        console.error("Error updating analysis results:", err);
+        setError("Ошибка при обновлении результатов анализа");
+      }
     }
   };
 
@@ -324,9 +356,17 @@ const Dashboard: React.FC = () => {
 
         {analysisResult && (
           <div className="bg-white shadow-md rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
-              Результаты анализа
-            </h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-gray-800">
+                Результаты анализа
+              </h2>
+              <button
+                onClick={() => setIsEditorOpen(true)}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Редактировать разметку
+              </button>
+            </div>
 
             <div className="flex flex-wrap gap-6 mb-6 items-center bg-gray-50 p-4 rounded-lg">
               <div className="flex items-center">
@@ -375,44 +415,53 @@ const Dashboard: React.FC = () => {
               />
             </div>
 
-            {analysisResult.classes && analysisResult.classes.length > 0 && (
-              <div className="mt-6 bg-gray-50 p-4 rounded-lg">
-                <h3 className="text-lg font-medium text-gray-800 mb-3">
-                  Классы обнаруженных объектов:
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                  {Object.keys(classColors).map((className, index) => {
-                    const color = classColors[className];
+            {analysisResult &&
+              analysisResult.classes &&
+              Array.isArray(analysisResult.classes) &&
+              analysisResult.classes.length > 0 && (
+                <div className="mt-6 bg-gray-50 p-4 rounded-lg">
+                  <h3 className="text-lg font-medium text-gray-800 mb-3">
+                    Классы обнаруженных объектов:
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    {Object.keys(classColors).map((className, index) => {
+                      const color = classColors[className];
 
-                    const count = analysisResult.classes.filter(
-                      (c: string) => c === className
-                    ).length;
-                    return (
-                      <div key={index} className="flex items-center space-x-2">
+                      const count = analysisResult.classes.filter(
+                        (c: string) => c === className
+                      ).length;
+                      return (
                         <div
-                          className="w-4 h-4 rounded-sm"
-                          style={{ backgroundColor: color }}
-                        ></div>
-                        <span className="text-sm text-gray-700">
-                          {className}{" "}
-                          <span className="text-gray-500">({count})</span>
-                        </span>
-                      </div>
-                    );
-                  })}
+                          key={index}
+                          className="flex items-center space-x-2"
+                        >
+                          <div
+                            className="w-4 h-4 rounded-sm"
+                            style={{ backgroundColor: color }}
+                          ></div>
+                          <span className="text-sm text-gray-700">
+                            {className}{" "}
+                            <span className="text-gray-500">({count})</span>
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {analysisResult.masks && analysisResult.masks.length > 0 && (
-              <div className="mt-3">
-                <p className="text-sm text-gray-600">
-                  Обнаружено областей: {analysisResult.masks.length}
-                </p>
-              </div>
-            )}
+            {analysisResult &&
+              analysisResult.masks &&
+              Array.isArray(analysisResult.masks) &&
+              analysisResult.masks.length > 0 && (
+                <div className="mt-3">
+                  <p className="text-sm text-gray-600">
+                    Обнаружено областей: {analysisResult.masks.length}
+                  </p>
+                </div>
+              )}
 
-            {analysisResult.classes.length > 0 ? (
+            {analysisResult && analysisResult.message ? (
               <div className="mt-3 text-sm text-gray-600">
                 <p>{analysisResult.message}</p>
               </div>
@@ -424,6 +473,14 @@ const Dashboard: React.FC = () => {
           </div>
         )}
       </div>
+
+      <AnnotationEditorModal
+        isOpen={isEditorOpen}
+        onClose={() => setIsEditorOpen(false)}
+        historyItem={analysisResult}
+        imageSrc={preview}
+        onSave={handleSaveAnnotations}
+      />
     </div>
   );
 };
