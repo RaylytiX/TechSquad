@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
-
+import logo from "/logo.svg"; 
 const CLIENT_URL = `/client`;
 const AUTH_URL = `/auth`;
 
@@ -55,7 +55,7 @@ const Header: React.FC<HeaderProps> = ({ onAuthChange }) => {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-4">
             <div className="w-70 h-50 flex items-center justify-center shadow-md">
-              <img src="/лого.svg"></img>
+              <img src={logo}></img>
             </div>{" "}
           </div>
 

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AuthNav from "./AuthNav";
-
+import maskot from "/maskot.png";
 
 const API_URL = `/auth/login`;
 
@@ -66,9 +66,9 @@ const Login: React.FC<LoginProps> = ({ onAuthChange }) => {
   return (
     <div className="flex items-center justify-center bg-[#121212] py-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-        <div className="flex items-center justify-center mb-6">
-          <img src="/maskot.png"></img>
-
+        {/* Центрирование картинки */}
+        <div className="flex justify-center">
+          <img src={maskot} alt="Maskot" />
         </div>
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-[#F6F6F6]">
