@@ -483,23 +483,24 @@ const Dashboard: React.FC = () => {
                   className="max-w-full h-auto"
                 />
               </div>
+
+              <button
+                onClick={uploadAndAnalyze}
+                disabled={isLoading}
+                className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#FF681F] hover:bg-[#e55a1b] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF681F] focus:ring-offset-[#121212] disabled:opacity-50 transition-colors duration-200"
+              >
+                {isLoading ? "Анализ..." : "Анализировать"}
+              </button>
             </div>
           )}
-
-          <button
-            onClick={uploadAndAnalyze}
-            disabled={!selectedFile || isLoading}
-            className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#FF681F] hover:bg-[#e55a1b] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF681F] focus:ring-offset-[#121212] disabled:opacity-50 transition-colors duration-200"
-          >
-            {isLoading ? "Анализ..." : "Анализировать"}
-          </button>
 
           {error && (
             <div className="mt-4 bg-red-900/50 border border-red-700 text-red-300 px-4 py-3 rounded relative">
               {error}
             </div>
           )}
-        </div>        {analysisResult && (
+        </div>
+        {analysisResult && (
           <div className="bg-[#1e1e1e] shadow-md rounded-lg p-6 border border-gray-700">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold text-[#F6F6F6]">
@@ -558,7 +559,8 @@ const Dashboard: React.FC = () => {
                 ref={canvasRef}
                 style={{ maxWidth: "100%", height: "auto" }}
               />
-            </div>            {analysisResult &&
+            </div>
+            {analysisResult &&
               analysisResult.classes &&
               Array.isArray(analysisResult.classes) &&
               analysisResult.classes.length > 0 && (
