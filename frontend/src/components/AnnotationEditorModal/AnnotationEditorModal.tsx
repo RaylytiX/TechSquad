@@ -118,16 +118,26 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
             }
           }
         });
-
         historyItem.masks.forEach((mask, index) => {
           if (mask && mask.length > 0) {
             const className =
               historyItem.classes[index + historyItem.boxes.length];
             if (className && className !== "unknown") {
+              let flatCoordinates: number[];
+              if (Array.isArray(mask[0])) {
+                flatCoordinates = mask.flatMap((point) =>
+                  Array.isArray(point) && point.length >= 2
+                    ? [Number(point[0]), Number(point[1])]
+                    : []
+                );
+              } else {
+                flatCoordinates = mask.map((coord) => Number(coord));
+              }
+
               initialAnnotations.push({
                 id: `mask-${index}-${Date.now()}`,
                 type: "mask",
-                coordinates: mask.flat(),
+                coordinates: flatCoordinates,
                 class_name: className,
               });
             }
@@ -291,7 +301,6 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
     maskPoints,
     selectedTool,
   ]);
-  
   const handleSaveAnnotations = async () => {
     if (!historyItem || isSaving) return;
 
@@ -302,62 +311,97 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
         throw new Error("Invalid file ID format. Expected UUID.");
       }
 
-      const updatedBoxes: number[][] = [];
-      const updatedMasks: Array<Array<Array<number>>> = []; // Трехмерный массив для масок
-      const updatedClasses: string[] = [];
-      const updatedNumClasses: number[] = [];
+      const updatedBoxes: number[][] = [...historyItem.boxes];
+      const updatedMasks: Array<Array<Array<number>>> = [];
+      const updatedClasses: string[] = [...historyItem.classes];
+      const updatedNumClasses: number[] = [...historyItem.num_classes];
 
-      // Сначала собираем все боксы из аннотаций
-      let boxCount = 0;
-      annotations.forEach((ann) => {
-        if (ann.type === "box") {
-          const boxData = ann.coordinates.map(coord => Number(coord));
-          updatedBoxes.push(boxData);
-          updatedClasses.push(ann.class_name);
-          updatedNumClasses.push(boxCount);
-          boxCount++;
-        }
-      });
-      
-      // Затем собираем все маски, преобразуя их в правильный формат
-      let maskCount = 0;
-      annotations.forEach((ann) => {
-        if (ann.type === "mask") {
-          // Преобразуем одномерный массив координат в массив пар [x, y]
-          const pairs: Array<[number, number]> = [];
-          for (let i = 0; i < ann.coordinates.length; i += 2) {
-            if (i + 1 < ann.coordinates.length) {
-              // Убеждаемся, что координаты - числа
-              const x = Number(ann.coordinates[i]);
-              const y = Number(ann.coordinates[i + 1]);
-                
-              // Проверяем, что координаты действительные числа
-              if (!isNaN(x) && !isNaN(y)) {
-                pairs.push([x, y]);
+      historyItem.masks.forEach((mask) => {
+        if (Array.isArray(mask) && mask.length > 0) {
+          if (Array.isArray(mask[0])) {
+            updatedMasks.push(
+              mask.map((point) =>
+                Array.isArray(point) && point.length >= 2
+                  ? [Number(point[0]), Number(point[1])]
+                  : [0, 0]
+              )
+            );
+          } else {
+            const formattedMask: Array<Array<number>> = [];
+            for (let i = 0; i < mask.length; i += 2) {
+              if (i + 1 < mask.length) {
+                formattedMask.push([Number(mask[i]), Number(mask[i + 1])]);
               }
             }
-          }
-          
-          // Добавляем маску только если в ней есть точки
-          if (pairs.length > 2) { // Минимум 3 точки для замкнутого полигона
-            updatedMasks.push(pairs);
-            updatedClasses.push(ann.class_name);
-            updatedNumClasses.push(boxCount + maskCount); 
-            maskCount++;
+            if (formattedMask.length > 0) {
+              updatedMasks.push(formattedMask);
+            }
           }
         }
-      });      // Проверяем, что все типы данных корректны перед отправкой
+      });
+
+      let boxCount = historyItem.boxes.length;
+      let maskCount = historyItem.masks.length;
+
+      annotations.forEach((ann) => {
+        const annotationExistsInOriginal =
+          historyItem.boxes.some((box, idx) => {
+            if (
+              ann.type === "box" &&
+              JSON.stringify(box) === JSON.stringify(ann.coordinates)
+            ) {
+              return true;
+            }
+            return false;
+          }) ||
+          historyItem.masks.some((mask, idx) => {
+            if (ann.type === "mask") {
+              const className =
+                historyItem.classes[idx + historyItem.boxes.length];
+              return className === ann.class_name;
+            }
+            return false;
+          });
+
+        if (!annotationExistsInOriginal) {
+          if (ann.type === "box") {
+            const boxData = ann.coordinates.map((coord) => Number(coord));
+            updatedBoxes.push(boxData);
+            updatedClasses.push(ann.class_name);
+            updatedNumClasses.push(boxCount);
+            boxCount++;
+          } else if (ann.type === "mask") {
+            const pairs: Array<[number, number]> = [];
+            for (let i = 0; i < ann.coordinates.length; i += 2) {
+              if (i + 1 < ann.coordinates.length) {
+                const x = Number(ann.coordinates[i]);
+                const y = Number(ann.coordinates[i + 1]);
+
+                if (!isNaN(x) && !isNaN(y)) {
+                  pairs.push([x, y]);
+                }
+              }
+            }
+
+            if (pairs.length > 2) {
+              updatedMasks.push(pairs);
+              updatedClasses.push(ann.class_name);
+              updatedNumClasses.push(boxCount + maskCount);
+              maskCount++;
+            }
+          }
+        }
+      });
+
       const payload = {
         file_id: historyItem.file_id,
         masks: updatedMasks,
         boxes: updatedBoxes,
         classes: updatedClasses,
-        num_classes: updatedNumClasses.map(val => Number(val)), // убедимся что все элементы - числа
+        num_classes: updatedNumClasses.map((val) => Number(val)),
         ind_cls: historyItem.ind_cls || {},
         confs: historyItem.confs || [],
       };
-
-
 
       onSave?.(payload);
       onClose();
@@ -716,8 +760,15 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
   };
   if (!isOpen) return null;
 
-  return (    <div className="fixed inset-0 z-50 overflow-hidden flex items-center justify-center bg-black bg-opacity-80 p-4" onClick={(e) => e.stopPropagation()}>
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl h-[90vh] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
+  return (
+    <div
+      className="fixed inset-0 z-50 overflow-hidden flex items-center justify-center bg-black bg-opacity-80 p-4"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div
+        className="bg-white rounded-lg shadow-xl w-full max-w-4xl h-[90vh] flex flex-col overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex justify-between items-center p-4 border-b bg-gray-50">
           <h3 className="text-xl font-semibold text-gray-800">
@@ -745,7 +796,9 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
         </div>
 
         {/* Toolbar */}
-        <div className="p-2 border-b bg-gray-100 flex space-x-2 items-center">          <button
+        <div className="p-2 border-b bg-gray-100 flex space-x-2 items-center">
+          {" "}
+          <button
             onClick={() => handleToolChange("pan")}
             className={`px-3 py-1 text-sm rounded hover:bg-gray-300 ${
               selectedTool === "pan"
@@ -785,11 +838,11 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
           >
             Рисовать маску
           </button>
-
           {/* Delete button */}
           {selectedAnnotationId &&
             selectedTool === "select" &&
-            !isMovingAnnotation && (              <button
+            !isMovingAnnotation && (
+              <button
                 onClick={() => {
                   setAnnotations(
                     annotations.filter((ann) => ann.id !== selectedAnnotationId)
@@ -801,14 +854,19 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
               >
                 Удалить выделенное
               </button>
-            )}          {selectedTool && (
+            )}{" "}
+          {selectedTool && (
             <span className="text-xs text-gray-600 ml-auto mr-2">
-              Инструмент: {
-                selectedTool === "pan" ? "Перемещение" :
-                selectedTool === "select" ? "Выделение" :
-                selectedTool === "drawBox" ? "Рисование рамки" :
-                selectedTool === "drawMask" ? "Рисование маски" : ""
-              }
+              Инструмент:{" "}
+              {selectedTool === "pan"
+                ? "Перемещение"
+                : selectedTool === "select"
+                ? "Выделение"
+                : selectedTool === "drawBox"
+                ? "Рисование рамки"
+                : selectedTool === "drawMask"
+                ? "Рисование маски"
+                : ""}
             </span>
           )}
         </div>

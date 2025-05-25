@@ -160,7 +160,6 @@ const Profile: React.FC = () => {
       setImageLoading(false);
     }
   };
-
   const getColorForClass = (className: string, classIndex: number) => {
     if (classColors[className]) {
       return classColors[className];
@@ -188,6 +187,16 @@ const Profile: React.FC = () => {
       return;
     }
 
+    if (selectedHistory.masks && !Array.isArray(selectedHistory.masks)) {
+      console.error("Masks is not an array:", selectedHistory.masks);
+      selectedHistory.masks = [];
+    }
+
+    if (selectedHistory.boxes && !Array.isArray(selectedHistory.boxes)) {
+      console.error("Boxes is not an array:", selectedHistory.boxes);
+      selectedHistory.boxes = [];
+    }
+
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     if (!ctx) {
@@ -201,12 +210,12 @@ const Profile: React.FC = () => {
     canvas.height = img.height;
 
     ctx.drawImage(img, 0, 0, img.width, img.height);
-
     if (
       showMasks &&
       selectedHistory.masks &&
       selectedHistory.masks.length > 0
-    ) {      selectedHistory.masks.forEach((mask: any, index: number) => {
+    ) {
+      selectedHistory.masks.forEach((mask: any, index: number) => {
         if (
           mask &&
           mask.length > 0 &&
@@ -216,40 +225,68 @@ const Profile: React.FC = () => {
           const className = selectedHistory.classes[index];
           const classIndex = selectedHistory.num_classes[index];
           const color = getColorForClass(className, classIndex);
-
           const hueMatch = color.match(/\d+/);
           const hue = hueMatch ? hueMatch[0] : "0";
+
           const rgbaFill = `hsla(${hue}, 70%, 50%, 0.3)`;
           const rgbaBorder = `hsla(${hue}, 70%, 50%, 0.8)`;
+          console.log(`Маска #${index}:`, {
+            maskType: Array.isArray(mask[0])
+              ? "двумерный массив"
+              : "одномерный массив",
+            maskLength: mask.length,
+            firstElement: mask[0],
+            isArrayFirstElement: Array.isArray(mask[0]),
+            sample: JSON.stringify(mask).substring(0, 100),
+          });
 
           ctx.beginPath();
-          
-          // Проверяем формат маски и обрабатываем все возможные варианты
+
           try {
-            // Если маска в формате [[x1,y1], [x2,y2], ...]
             if (Array.isArray(mask[0])) {
               if (mask[0].length >= 2) {
-                ctx.moveTo(Number(mask[0][0]), Number(mask[0][1]));
-                
+                const x = Number(mask[0][0]);
+                const y = Number(mask[0][1]);
+                console.log(
+                  `Маска #${index} - начальная точка (вложенный массив):`,
+                  x,
+                  y
+                );
+
+                ctx.moveTo(x, y);
+
                 for (let i = 1; i < mask.length; i++) {
                   if (Array.isArray(mask[i]) && mask[i].length >= 2) {
                     ctx.lineTo(Number(mask[i][0]), Number(mask[i][1]));
                   }
                 }
               }
-            } 
-            // Если маска в формате [x1,y1,x2,y2,...]
-            else if (typeof mask[0] === 'number') {
-              ctx.moveTo(Number(mask[0]), Number(mask[1]));
-              
+            } else if (
+              typeof mask[0] === "number" ||
+              typeof mask[0] === "string"
+            ) {
+              const x = Number(mask[0]);
+              const y = Number(mask[1]);
+              console.log(
+                `Маска #${index} - начальная точка (плоский массив):`,
+                x,
+                y
+              );
+
+              ctx.moveTo(x, y);
               for (let i = 2; i < mask.length; i += 2) {
-                if (i+1 < mask.length) {
+                if (i + 1 < mask.length) {
                   ctx.lineTo(Number(mask[i]), Number(mask[i + 1]));
                 }
               }
+            } else {
+              console.error(
+                `Неподдерживаемый формат маски #${index}:`,
+                typeof mask[0]
+              );
             }
           } catch (error) {
-            console.error("Ошибка при отрисовке маски в профиле:", error);
+            console.error(`Ошибка при отрисовке маски #${index}:`, error);
           }
           ctx.closePath();
           ctx.fillStyle = rgbaFill;
