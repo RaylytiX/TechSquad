@@ -49,45 +49,41 @@ const Header: React.FC<HeaderProps> = ({ onAuthChange }) => {
       navigate("/login");
     }
   };
-
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <header className="bg-[#121212] shadow-sm border-b border-gray-800">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-b border-gray-800 rounded-lg">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-4">
-            <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center shadow-md">
-              <span className="text-white text-2xl font-bold select-none">
-                R
-              </span>
-            </div>
-            <h1 className="text-xl font-semibold text-gray-900">RaylytiX</h1>
+            <div className="w-70 h-50 flex items-center justify-center shadow-md">
+              <img src="/лого.svg"></img>
+            </div>{" "}
           </div>
 
           <div className="flex items-center space-x-4">
             <nav className="flex space-x-4">
               <Link
                 to="/dashboard"
-                className="text-gray-700 hover:text-indigo-600 font-medium px-3 py-2 rounded-md text-sm"
+                className="px-6 py-2 rounded-full font-bold text-sm text-white bg-[#3A3A3A] border border-white hover:from-[#e55a1b] hover:to-[#1c2d7c] transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md"
               >
                 Анализ рентгенограмм
               </Link>
               <Link
                 to="/profile"
-                className="text-gray-700 hover:text-indigo-600 font-medium px-3 py-2 rounded-md text-sm"
+                className="px-6 py-2 rounded-full font-bold text-sm text-white bg-[#3A3A3A] border border-white hover:from-[#e55a1b] hover:to-[#1c2d7c] transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md"
               >
                 Личный кабинет
               </Link>
             </nav>
 
             {userEmail && (
-              <div className="text-sm text-gray-600 hidden md:inline-block mr-2">
+              <div className="px-6 py-2 rounded-full font-bold text-sm text-white bg-[#3A3A3A] border border-white hover:from-[#e55a1b] hover:to-[#1c2d7c] transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md">
                 {userEmail}
               </div>
             )}
 
             <button
               onClick={handleLogout}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
+              className="px-6 py-2 rounded-full font-bold text-sm text-white bg-gradient-to-r from-[#FF681F] to-[#253FAD] border border-white hover:from-[#e55a1b] hover:to-[#1c2d7c] transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md"
             >
               Выйти
             </button>

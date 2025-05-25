@@ -443,22 +443,21 @@ const Dashboard: React.FC = () => {
       }
     }
   };
-
   return (
-    <div className="py-8">
+    <div className="py-8 min-h-screen bg-[#121212]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">
+        <h1 className="text-3xl font-bold text-[#F6F6F6] mb-6">
           Анализ рентгенограмм
         </h1>
 
-        <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">
+        <div className="bg-[#1e1e1e] shadow-md rounded-lg p-6 mb-6 border border-gray-700">
+          <h2 className="text-xl font-semibold text-[#F6F6F6] mb-4">
             Загрузка изображения
           </h2>
           <div className="mb-4">
             <label
               htmlFor="file-upload"
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block text-sm font-medium text-gray-300 mb-2"
             >
               Выберите рентгеновский снимок
             </label>
@@ -467,15 +466,15 @@ const Dashboard: React.FC = () => {
               type="file"
               accept="image/*"
               onChange={handleFileChange}
-              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+              className="block w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#FF681F] file:text-white hover:file:bg-[#e55a1b] file:transition-colors file:duration-200"
             />
           </div>
 
           {selectedFile && preview && (
             <div className="mt-4 mb-4">
-              <p className="text-sm text-gray-600 mb-2">Предпросмотр:</p>
+              <p className="text-sm text-gray-300 mb-2">Предпросмотр:</p>
               <div
-                className="border rounded-md p-2 overflow-hidden"
+                className="border border-gray-600 rounded-md p-2 overflow-hidden bg-[#2a2a2a]"
                 style={{ maxWidth: "100%" }}
               >
                 <img
@@ -490,33 +489,31 @@ const Dashboard: React.FC = () => {
           <button
             onClick={uploadAndAnalyze}
             disabled={!selectedFile || isLoading}
-            className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+            className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#FF681F] hover:bg-[#e55a1b] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF681F] focus:ring-offset-[#121212] disabled:opacity-50 transition-colors duration-200"
           >
             {isLoading ? "Анализ..." : "Анализировать"}
           </button>
 
           {error && (
-            <div className="mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative">
+            <div className="mt-4 bg-red-900/50 border border-red-700 text-red-300 px-4 py-3 rounded relative">
               {error}
             </div>
           )}
-        </div>
-
-        {analysisResult && (
-          <div className="bg-white shadow-md rounded-lg p-6">
+        </div>        {analysisResult && (
+          <div className="bg-[#1e1e1e] shadow-md rounded-lg p-6 border border-gray-700">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-gray-800">
+              <h2 className="text-xl font-semibold text-[#F6F6F6]">
                 Результаты анализа
               </h2>
               <button
                 onClick={() => setIsEditorOpen(true)}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-[#253FAD] hover:bg-[#1e3490] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#253FAD] focus:ring-offset-[#121212] transition-colors duration-200"
               >
                 Редактировать разметку
               </button>
             </div>
 
-            <div className="flex flex-wrap gap-6 mb-6 items-center bg-gray-50 p-4 rounded-lg">
+            <div className="flex flex-wrap gap-6 mb-6 items-center bg-[#2a2a2a] p-4 rounded-lg border border-gray-600">
               <div className="flex items-center">
                 <label className="inline-flex items-center cursor-pointer">
                   <input
@@ -525,8 +522,8 @@ const Dashboard: React.FC = () => {
                     onChange={(e) => setShowBoxes(e.target.checked)}
                     className="sr-only peer"
                   />
-                  <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                  <span className="ms-3 text-sm font-medium text-gray-700">
+                  <div className="relative w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#FF681F]/30 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#FF681F]"></div>
+                  <span className="ms-3 text-sm font-medium text-gray-300">
                     Рамки объектов
                   </span>
                 </label>
@@ -539,36 +536,34 @@ const Dashboard: React.FC = () => {
                     onChange={(e) => setShowMasks(e.target.checked)}
                     className="sr-only peer"
                   />
-                  <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                  <span className="ms-3 text-sm font-medium text-gray-700">
+                  <div className="relative w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#FF681F]/30 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#FF681F]"></div>
+                  <span className="ms-3 text-sm font-medium text-gray-300">
                     Маски объектов
                   </span>
                 </label>
               </div>
 
               {!showBoxes && !showMasks && (
-                <div className="text-sm text-amber-600 ml-auto font-medium">
+                <div className="text-sm text-amber-400 ml-auto font-medium">
                   Включите маски или рамки для отображения найденных объектов
                 </div>
               )}
             </div>
 
             <div
-              className="border rounded-md p-2 overflow-hidden"
+              className="border border-gray-600 rounded-md p-2 overflow-hidden bg-[#2a2a2a]"
               style={{ maxWidth: "100%" }}
             >
               <canvas
                 ref={canvasRef}
                 style={{ maxWidth: "100%", height: "auto" }}
               />
-            </div>
-
-            {analysisResult &&
+            </div>            {analysisResult &&
               analysisResult.classes &&
               Array.isArray(analysisResult.classes) &&
               analysisResult.classes.length > 0 && (
-                <div className="mt-6 bg-gray-50 p-4 rounded-lg">
-                  <h3 className="text-lg font-medium text-gray-800 mb-3">
+                <div className="mt-6 bg-[#2a2a2a] p-4 rounded-lg border border-gray-600">
+                  <h3 className="text-lg font-medium text-[#F6F6F6] mb-3">
                     Классы обнаруженных объектов:
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
@@ -587,9 +582,9 @@ const Dashboard: React.FC = () => {
                             className="w-4 h-4 rounded-sm"
                             style={{ backgroundColor: color }}
                           ></div>
-                          <span className="text-sm text-gray-700">
+                          <span className="text-sm text-gray-300">
                             {className}{" "}
-                            <span className="text-gray-500">({count})</span>
+                            <span className="text-gray-400">({count})</span>
                           </span>
                         </div>
                       );
@@ -603,19 +598,19 @@ const Dashboard: React.FC = () => {
               Array.isArray(analysisResult.masks) &&
               analysisResult.masks.length > 0 && (
                 <div className="mt-3">
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-300">
                     Обнаружено областей: {analysisResult.masks.length}
                   </p>
                 </div>
               )}
 
             {analysisResult && analysisResult.message ? (
-              <div className="mt-3 text-sm text-gray-600">
+              <div className="mt-3 text-sm text-gray-300">
                 <p>{analysisResult.message}</p>
               </div>
             ) : (
-              <div className="rounded-md bg-red-50 p-4 mt-2">
-                <p className="text-ls text-red-700">Объекты не найдены</p>
+              <div className="rounded-md bg-red-900/50 border border-red-700 p-4 mt-2">
+                <p className="text-ls text-red-300">Объекты не найдены</p>
               </div>
             )}
           </div>

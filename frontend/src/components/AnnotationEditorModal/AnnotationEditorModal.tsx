@@ -213,9 +213,8 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
         ctx.strokeStyle = strokeColor;
         ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
         ctx.fillStyle = fillColor;
-        ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
-        ctx.fillStyle = strokeColor;
-        ctx.font = `${12 / scale}px Onder, sans-serif`;
+        ctx.fillRect(x1, y1, x2 - x1, y2 - y1);        ctx.fillStyle = strokeColor;
+        ctx.font = `${12 / scale}px sans-serif`;
         const label = `${ann.class_name}`;
         ctx.fillText(label, x1, y1 - 5 / scale);
       } else if (ann.type === "mask") {
@@ -244,10 +243,8 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
           ctx.fillStyle = isSelected ? "blue" : isHovered ? "orange" : "red";
           ctx.fill();
           ctx.stroke();
-        });
-
-        ctx.fillStyle = isSelected ? "blue" : isHovered ? "orange" : "red";
-        ctx.font = `${12 / scale}px Onder, sans-serif`;
+        });        ctx.fillStyle = isSelected ? "blue" : isHovered ? "orange" : "red";
+        ctx.font = `${12 / scale}px sans-serif`;
         ctx.fillText(ann.class_name, points[0].x, points[0].y - 5 / scale);
       }
     });
@@ -760,23 +757,22 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
   };
   if (!isOpen) return null;
 
-  return (
-    <div
+  return (    <div
       className="fixed inset-0 z-50 overflow-hidden flex items-center justify-center bg-black bg-opacity-80 p-4"
       onClick={(e) => e.stopPropagation()}
     >
       <div
-        className="bg-white rounded-lg shadow-xl w-full max-w-4xl h-[90vh] flex flex-col overflow-hidden"
+        className="bg-[#1e1e1e] rounded-lg shadow-xl w-full max-w-4xl h-[90vh] flex flex-col overflow-hidden border border-gray-600"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex justify-between items-center p-4 border-b bg-gray-50">
-          <h3 className="text-xl font-semibold text-gray-800">
+        <div className="flex justify-between items-center p-4 border-b border-gray-600 bg-[#2a2a2a]">
+          <h3 className="text-xl font-semibold text-[#F6F6F6]">
             Редактор разметки
           </h3>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full"
+            className="text-gray-400 hover:text-gray-300 transition-colors p-1 rounded-full"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -793,47 +789,45 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
               />
             </svg>
           </button>
-        </div>
-
-        {/* Toolbar */}
-        <div className="p-2 border-b bg-gray-100 flex space-x-2 items-center">
+        </div>        {/* Toolbar */}
+        <div className="p-2 border-b border-gray-600 bg-[#2a2a2a] flex space-x-2 items-center">
           {" "}
           <button
             onClick={() => handleToolChange("pan")}
-            className={`px-3 py-1 text-sm rounded hover:bg-gray-300 ${
+            className={`px-3 py-1 text-sm rounded transition-colors duration-200 ${
               selectedTool === "pan"
-                ? "bg-blue-500 text-white hover:bg-blue-600"
-                : "bg-gray-200"
+                ? "bg-[#FF681F] text-white hover:bg-[#e55a1b]"
+                : "bg-[#3a3a3a] text-gray-300 hover:bg-[#4a4a4a]"
             }`}
           >
             Перемещение
           </button>
           <button
             onClick={() => handleToolChange("select")}
-            className={`px-3 py-1 text-sm rounded ${
+            className={`px-3 py-1 text-sm rounded transition-colors duration-200 ${
               selectedTool === "select"
-                ? "bg-blue-500 text-white hover:bg-blue-600"
-                : "bg-gray-200 hover:bg-gray-300"
+                ? "bg-[#FF681F] text-white hover:bg-[#e55a1b]"
+                : "bg-[#3a3a3a] text-gray-300 hover:bg-[#4a4a4a]"
             }`}
           >
             Выделение
           </button>
           <button
             onClick={() => handleToolChange("drawBox")}
-            className={`px-3 py-1 text-sm rounded ${
+            className={`px-3 py-1 text-sm rounded transition-colors duration-200 ${
               selectedTool === "drawBox"
                 ? "bg-green-500 text-white hover:bg-green-600"
-                : "bg-gray-200 hover:bg-gray-300"
+                : "bg-[#3a3a3a] text-gray-300 hover:bg-[#4a4a4a]"
             }`}
           >
             Рисовать рамку
           </button>
           <button
             onClick={() => handleToolChange("drawMask")}
-            className={`px-3 py-1 text-sm rounded ${
+            className={`px-3 py-1 text-sm rounded transition-colors duration-200 ${
               selectedTool === "drawMask"
                 ? "bg-yellow-500 text-white hover:bg-yellow-600"
-                : "bg-gray-200 hover:bg-gray-300"
+                : "bg-[#3a3a3a] text-gray-300 hover:bg-[#4a4a4a]"
             }`}
           >
             Рисовать маску
@@ -850,13 +844,13 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
                   setSelectedAnnotationId(null);
                   setHoveredAnnotationId(null);
                 }}
-                className="px-3 py-1 text-sm rounded bg-red-500 text-white hover:bg-red-600 ml-auto"
+                className="px-3 py-1 text-sm rounded bg-red-500 text-white hover:bg-red-600 ml-auto transition-colors duration-200"
               >
                 Удалить выделенное
               </button>
             )}{" "}
           {selectedTool && (
-            <span className="text-xs text-gray-600 ml-auto mr-2">
+            <span className="text-xs text-gray-400 ml-auto mr-2">
               Инструмент:{" "}
               {selectedTool === "pan"
                 ? "Перемещение"
@@ -869,16 +863,14 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
                 : ""}
             </span>
           )}
-        </div>
-
-        {/* Canvas Area */}
-        <div className="flex-grow p-1 bg-gray-200 overflow-auto flex justify-center items-center">
+        </div>        {/* Canvas Area */}
+        <div className="flex-grow p-1 bg-[#121212] overflow-auto flex justify-center items-center">
           {imageSrc ? (
             <canvas
               ref={canvasRef}
               width={imageElement?.width || 800}
               height={imageElement?.height || 600}
-              className="border border-gray-400 shadow-lg"
+              className="border border-gray-600 shadow-lg"
               style={{ cursor: getCanvasCursor() }}
               onMouseDown={handleMouseDown}
               onMouseUp={handleMouseUp}
@@ -887,25 +879,23 @@ const AnnotationEditorModal: React.FC<AnnotationEditorModalProps> = ({
               onWheel={handleWheel}
             />
           ) : (
-            <div className="text-gray-500">Загрузка изображения...</div>
+            <div className="text-gray-400">Загрузка изображения...</div>
           )}
-        </div>
-
-        {/* Footer with Save Button */}
-        <div className="flex justify-end items-center p-4 border-t bg-gray-50">
+        </div>        {/* Footer with Save Button */}
+        <div className="flex justify-end items-center p-4 border-t border-gray-600 bg-[#2a2a2a]">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm text-gray-700 bg-gray-200 hover:bg-gray-300 rounded mr-2 transition-colors"
+            className="px-4 py-2 text-sm text-gray-300 bg-[#3a3a3a] hover:bg-[#4a4a4a] border border-gray-600 rounded mr-2 transition-colors duration-200"
           >
             Отмена
           </button>
           <button
             onClick={handleSaveAnnotations}
             disabled={isSaving}
-            className={`px-4 py-2 text-sm text-white rounded transition-colors shadow-md ${
+            className={`px-4 py-2 text-sm text-white rounded transition-colors shadow-md duration-200 ${
               isSaving
-                ? "bg-indigo-400 cursor-not-allowed"
-                : "bg-indigo-600 hover:bg-indigo-700"
+                ? "bg-[#FF681F]/60 cursor-not-allowed"
+                : "bg-[#FF681F] hover:bg-[#e55a1b]"
             }`}
           >
             {isSaving ? "Сохранение..." : "Сохранить разметку"}

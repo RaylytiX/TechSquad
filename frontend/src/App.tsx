@@ -41,11 +41,10 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
     checkAuth();
   }, []);
-
   if (isAuthorized === null) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        Загрузка...
+      <div className="flex justify-center items-center h-screen bg-[#121212]">
+        <div className="text-[#F6F6F6] text-lg">Загрузка...</div>
       </div>
     );
   }
@@ -80,31 +79,29 @@ function App() {
   const handleAuthChange = (authenticated: boolean) => {
     setIsAuthenticated(authenticated);
   };
-
   if (isAuthenticated === null) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        Загрузка...
+      <div className="flex justify-center items-center h-screen bg-[#121212]">
+        <div className="text-[#F6F6F6] text-lg">Загрузка...</div>
       </div>
     );
   }
-
   return (
     <Router>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-[#121212]">
         {isAuthenticated && <Header onAuthChange={handleAuthChange} />}
         <main className={isAuthenticated ? "pt-6" : ""}>
           {!isAuthenticated && (
             <div className="flex flex-col items-center mb-8 pt-8">
-              <div className="w-15 h-15 mb-3 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg">
+              <div className="w-15 h-15 mb-3 bg-[#FF681F] rounded-lg flex items-center justify-center shadow-lg">
                 <span className="text-white text-5xl font-bold select-none">
                   R
                 </span>
               </div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              <h1 className="text-3xl font-bold text-[#F6F6F6] mb-2">
                 RaylytiX
               </h1>
-              <p className="text-gray-500 text-center text-sm">
+              <p className="text-gray-400 text-center text-sm">
                 Добро пожаловать!
               </p>
             </div>

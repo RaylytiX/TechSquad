@@ -399,45 +399,44 @@ const Profile: React.FC = () => {
       </div>
     );
   }
-
   return (
-    <div className="py-8">
+    <div className="min-h-screen bg-[#121212] py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">
+        <h1 className="text-3xl font-bold text-[#F6F6F6] mb-6 text-center">
           Личный кабинет
         </h1>
 
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative">
+          <div className="mb-6 bg-red-900/50 border border-red-700 text-red-300 px-4 py-3 rounded relative">
             {error}
           </div>
         )}
 
         {userInfo && (
-          <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          <div className="bg-[#1e1e1e] shadow-md rounded-lg p-6 mb-6 border border-gray-700">
+            <h2 className="text-xl font-semibold text-[#F6F6F6] mb-4">
               Информация о пользователе
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-gray-500">Email:</p>
-                <p className="text-gray-800 font-medium">{userInfo.email}</p>
+                <p className="text-sm text-gray-400">Email:</p>
+                <p className="text-[#F6F6F6] font-medium">{userInfo.email}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Дата регистрации:</p>
-                <p className="text-gray-800 font-medium">
+                <p className="text-sm text-gray-400">Дата регистрации:</p>
+                <p className="text-[#F6F6F6] font-medium">
                   {userInfo.created_at}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Статус:</p>
-                <p className="text-gray-800 font-medium">
+                <p className="text-sm text-gray-400">Статус:</p>
+                <p className="text-[#F6F6F6] font-medium">
                   {userInfo.is_active ? (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-900/50 text-green-300 border border-green-700">
                       Активен
                     </span>
                   ) : (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-900/50 text-red-300 border border-red-700">
                       Неактивен
                     </span>
                   )}
@@ -447,15 +446,15 @@ const Profile: React.FC = () => {
           </div>
         )}
 
-        <div className="bg-white shadow-md rounded-lg p-6">
+        <div className="bg-[#1e1e1e] shadow-md rounded-lg p-6 border border-gray-700">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold text-gray-800">
+            <h2 className="text-xl font-semibold text-[#F6F6F6]">
               История анализов
             </h2>
             <button
               onClick={refreshHistory}
               disabled={isRefreshing}
-              className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+              className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#FF681F] hover:bg-[#e55a1b] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF681F] focus:ring-offset-[#121212] disabled:opacity-50 transition-colors duration-200"
             >
               {isRefreshing ? (
                 <>
@@ -486,57 +485,56 @@ const Profile: React.FC = () => {
               )}
             </button>
           </div>
-
           {history.length === 0 ? (
-            <p className="text-gray-600">У вас пока нет истории анализов.</p>
+            <p className="text-gray-400">У вас пока нет истории анализов.</p>
           ) : (
             <>
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                <table className="min-w-full divide-y divide-gray-600">
+                  <thead className="bg-[#2a2a2a]">
                     <tr>
                       <th
                         scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider"
                       >
                         ID файла
                       </th>
                       <th
                         scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider"
                       >
                         Дата создания
                       </th>
                       <th
                         scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider"
                       >
                         Дата обновления
                       </th>
                       <th
                         scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider"
                       >
                         Действия
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-[#1e1e1e] divide-y divide-gray-600">
                     {history.map((item) => (
                       <tr key={item.file_id}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#F6F6F6]">
                           {item.file_id.substring(0, 8)}...
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
                           {item.created_at}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
                           {item.updated_at}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
                           <button
                             onClick={() => fetchHistoryDetails(item.file_id)}
-                            className="text-indigo-600 hover:text-indigo-900"
+                            className="text-[#FF681F] hover:text-[#e55a1b] transition-colors duration-200"
                           >
                             Просмотреть
                           </button>
@@ -547,39 +545,35 @@ const Profile: React.FC = () => {
                 </table>
               </div>
 
-              {/* Pagination Controls */}
-              <div className="flex justify-between items-center mt-4 pt-3 border-t border-gray-200">
-                <div className="text-sm text-gray-700">
+              <div className="flex justify-between items-center mt-4 pt-3 border-t border-gray-600">
+                <div className="text-sm text-gray-400">
                   Страница {currentPage + 1} из {Math.max(totalPages + 1, 1)}
                 </div>
                 <div className="flex space-x-2">
                   <button
                     onClick={() => fetchHistoryPage(currentPage - 1)}
                     disabled={currentPage <= 0 || isRefreshing}
-                    className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-3 py-1 border border-gray-600 rounded-md text-sm font-medium text-gray-300 bg-[#2a2a2a] hover:bg-[#3a3a3a] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                   >
                     Назад
                   </button>
                   <button
                     onClick={() => fetchHistoryPage(currentPage + 1)}
                     disabled={currentPage >= totalPages || isRefreshing}
-                    className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-3 py-1 border border-gray-600 rounded-md text-sm font-medium text-gray-300 bg-[#2a2a2a] hover:bg-[#3a3a3a] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                   >
                     Вперед
                   </button>
                 </div>
               </div>
             </>
-          )}
-
+          )}{" "}
           {selectedHistory && (
-            <div className="mt-6 p-4 border rounded-md">
-              <h3 className="text-lg font-medium text-gray-800 mb-2">
+            <div className="mt-6 p-4 border border-gray-600 rounded-md bg-[#1e1e1e]">
+              <h3 className="text-lg font-medium text-[#F6F6F6] mb-2">
                 Детали анализа
               </h3>
-
-              {/* Toggles for masks and boxes */}
-              <div className="flex flex-wrap gap-6 mb-6 items-center bg-gray-50 p-4 rounded-lg">
+              <div className="flex flex-wrap gap-6 mb-6 items-center bg-[#2a2a2a] p-4 rounded-lg border border-gray-600">
                 <div className="flex items-center">
                   <label className="inline-flex items-center cursor-pointer">
                     <input
@@ -588,8 +582,8 @@ const Profile: React.FC = () => {
                       onChange={(e) => setShowBoxes(e.target.checked)}
                       className="sr-only peer"
                     />
-                    <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                    <span className="ms-3 text-sm font-medium text-gray-700">
+                    <div className="relative w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#FF681F]/30 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#FF681F]"></div>
+                    <span className="ms-3 text-sm font-medium text-gray-300">
                       Рамки объектов
                     </span>
                   </label>
@@ -602,24 +596,23 @@ const Profile: React.FC = () => {
                       onChange={(e) => setShowMasks(e.target.checked)}
                       className="sr-only peer"
                     />
-                    <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                    <span className="ms-3 text-sm font-medium text-gray-700">
+                    <div className="relative w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#FF681F]/30 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#FF681F]"></div>
+                    <span className="ms-3 text-sm font-medium text-gray-300">
                       Маски объектов
                     </span>
                   </label>
                 </div>
 
                 {!showBoxes && !showMasks && (
-                  <div className="text-sm text-amber-600 ml-auto font-medium">
+                  <div className="text-sm text-amber-400 ml-auto font-medium">
                     Включите маски или рамки для отображения найденных объектов
                   </div>
                 )}
-              </div>
-
+              </div>{" "}
               {imageLoading ? (
                 <div className="flex justify-center py-8">
                   <svg
-                    className="animate-spin h-10 w-10 text-indigo-600"
+                    className="animate-spin h-10 w-10 text-[#FF681F]"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -640,11 +633,10 @@ const Profile: React.FC = () => {
                   </svg>
                 </div>
               ) : (
-                <div className="mb-6 border rounded-md p-2 overflow-hidden">
-                  <p className="text-sm font-medium text-gray-700 mb-2">
+                <div className="mb-6 border border-gray-600 rounded-md p-2 overflow-hidden bg-[#2a2a2a]">
+                  <p className="text-sm font-medium text-gray-300 mb-2">
                     Анализируемое изображение:
                   </p>
-
                   {/* Hidden original image for canvas reference */}
                   <img
                     ref={debugImageRef}
@@ -671,54 +663,51 @@ const Profile: React.FC = () => {
                       setDebugImageLoaded(true);
                       drawResultsOnCanvas();
                     }}
-                  />
-
+                  />{" "}
                   {/* Canvas for drawing the image with masks and boxes */}
                   <div className="flex justify-center">
                     <canvas
                       ref={canvasRef}
-                      className="max-w-full h-auto mx-auto border border-gray-200"
+                      className="max-w-full h-auto mx-auto border border-gray-600"
                     />
-                  </div>
-
+                  </div>{" "}
                   {!debugImageLoaded && !imageLoading && (
-                    <div className="text-center py-4 text-red-500">
+                    <div className="text-center py-4 text-red-400">
                       Не удалось загрузить изображение
                     </div>
                   )}
                 </div>
-              )}
-
+              )}{" "}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-gray-500">ID файла:</p>
-                  <p className="text-gray-800 font-medium">
+                  <p className="text-sm text-gray-400">ID файла:</p>
+                  <p className="text-[#F6F6F6] font-medium">
                     {selectedHistory.file_id}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">ID пользователя:</p>
-                  <p className="text-gray-800 font-medium">
+                  <p className="text-sm text-gray-400">ID пользователя:</p>
+                  <p className="text-[#F6F6F6] font-medium">
                     {selectedHistory.user_id}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Дата создания:</p>
-                  <p className="text-gray-800 font-medium">
+                  <p className="text-sm text-gray-400">Дата создания:</p>
+                  <p className="text-[#F6F6F6] font-medium">
                     {selectedHistory.created_at}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Дата обновления:</p>
-                  <p className="text-gray-800 font-medium">
+                  <p className="text-sm text-gray-400">Дата обновления:</p>
+                  <p className="text-[#F6F6F6] font-medium">
                     {selectedHistory.updated_at}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Отчет</p>
+                  <p className="text-sm text-gray-400">Отчет</p>
                   <div className="flex space-x-2">
                     <button
-                      className="text-green-600 hover:text-green-800 font-medium flex items-center"
+                      className="text-green-400 hover:text-green-300 font-medium flex items-center transition-colors duration-200"
                       onClick={() => {
                         if (selectedHistory?.path_to_report) {
                           viewPdfInBrowser(selectedHistory.path_to_report);
@@ -750,39 +739,36 @@ const Profile: React.FC = () => {
                       Открыть отчет
                     </button>
                   </div>
-                </div>
-
+                </div>{" "}
                 {selectedHistory.masks && (
                   <div>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-400">
                       Количество областей:
                     </p>
-                    <p className="text-gray-800 font-medium">
+                    <p className="text-[#F6F6F6] font-medium">
                       {Array.isArray(selectedHistory.masks)
                         ? selectedHistory.masks.length
                         : "Нет данных"}
                     </p>
                   </div>
                 )}
-
                 {selectedHistory.boxes && (
                   <div>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-400">
                       Количество объектов:
                     </p>
-                    <p className="text-gray-800 font-medium">
+                    <p className="text-[#F6F6F6] font-medium">
                       {Array.isArray(selectedHistory.boxes)
                         ? selectedHistory.boxes.length
                         : "Нет данных"}
                     </p>
                   </div>
                 )}
-              </div>
-
+              </div>{" "}
               {selectedHistory.classes &&
                 selectedHistory.classes.length > 0 && (
                   <div className="mt-4">
-                    <p className="text-sm text-gray-500 mb-1">
+                    <p className="text-sm text-gray-400 mb-1">
                       Обнаруженные классы:
                     </p>
                     <div className="flex flex-wrap gap-2">
