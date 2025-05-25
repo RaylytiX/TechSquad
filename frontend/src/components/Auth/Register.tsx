@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AuthNav from "./AuthNav";
-import maskot from "/maskot.png";
+import maskot from "@/assets/maskot.png";
 
 const API_URL = `/auth/signup`;
 

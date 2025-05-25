@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
-import logo from "/logo.svg"; 
+import logo from "@/assets/logo.svg"; // Adjust the path to where your logo is stored
 const CLIENT_URL = `/client`;
 const AUTH_URL = `/auth`;
 
