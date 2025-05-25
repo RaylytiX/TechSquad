@@ -99,23 +99,12 @@ const Dashboard: React.FC = () => {
       canvas.height = img.height;
       setImageSize({ width: img.width, height: img.height });
 
-      ctx.drawImage(img, 0, 0, img.width, img.height);
-
-      console.log("Drawing masks:", {
-        showMasks,
-        masks: analysisResult.masks,
-        classes: analysisResult.classes,
-        classColors,
-      });
-
-      if (
+      ctx.drawImage(img, 0, 0, img.width, img.height);      if (
         showMasks &&
         analysisResult.masks &&
         Array.isArray(analysisResult.masks) &&
         analysisResult.masks.length > 0
-      ) {
-        analysisResult.masks.forEach((mask: any, index: number) => {
-          console.log("Processing mask:", { mask, index });
+      ) {        analysisResult.masks.forEach((mask: any, index: number) => {
 
           if (
             mask &&
@@ -145,32 +134,43 @@ const Dashboard: React.FC = () => {
                     b,
                     16
                   )}, 0.8)`
-              );
+              );            ctx.beginPath();
 
-            ctx.beginPath();
+            // Проверяем формат маски и обрабатываем все возможные варианты
+            if (mask.length > 0) {
+              try {
+                // Если маска в формате [[x1,y1], [x2,y2], ...]
+                if (Array.isArray(mask[0])) {
+                  if (mask[0].length >= 2) {                    ctx.moveTo(Number(mask[0][0]), Number(mask[0][1]));
+                    
+                    for (let i = 1; i < mask.length; i++) {
+                      if (Array.isArray(mask[i]) && mask[i].length >= 2) {
+                        ctx.lineTo(Number(mask[i][0]), Number(mask[i][1]));
+                      }
+                    }
+                  }
+                } 
+                // Если маска в формате [x1,y1,x2,y2,...]
+                else if (typeof mask[0] === 'number') {                  ctx.moveTo(Number(mask[0]), Number(mask[1]));
+                  
+                  for (let i = 2; i < mask.length; i += 2) {
+                    if (i+1 < mask.length) {
+                      ctx.lineTo(Number(mask[i]), Number(mask[i + 1]));
+                    }
+                  }
+                }
+              } catch (error) {
+                console.error("Ошибка при отрисовке маски:", error);
+              }
 
-            // Проверяем формат маски
-            if (Array.isArray(mask[0])) {
-              // Если маска в формате [[x1,y1], [x2,y2], ...]
-              ctx.moveTo(mask[0][0], mask[0][1]);
-              for (let i = 1; i < mask.length; i++) {
-                ctx.lineTo(mask[i][0], mask[i][1]);
-              }
-            } else {
-              // Если маска в формате [x1,y1,x2,y2,...]
-              ctx.moveTo(mask[0], mask[1]);
-              for (let i = 2; i < mask.length; i += 2) {
-                ctx.lineTo(mask[i], mask[i + 1]);
-              }
+              ctx.closePath();
+              ctx.fillStyle = rgbaFill;
+              ctx.fill();
+
+              ctx.strokeStyle = rgbaBorder;
+              ctx.lineWidth = 1;
+              ctx.stroke();
             }
-
-            ctx.closePath();
-            ctx.fillStyle = rgbaFill;
-            ctx.fill();
-
-            ctx.strokeStyle = rgbaBorder;
-            ctx.lineWidth = 1;
-            ctx.stroke();
           }
         });
       }
@@ -196,7 +196,7 @@ const Dashboard: React.FC = () => {
               ctx.fillStyle = color + "B3";
               ctx.fillRect(x, y - 20, 100, 20);
               ctx.fillStyle = "white";
-              ctx.font = "12px Arial";
+              ctx.font = `12px Onder, sans-serif`;
               ctx.fillText(
                 `${className}: ${(confidence * 100).toFixed(1)}%`,
                 x + 5,
@@ -297,16 +297,108 @@ const Dashboard: React.FC = () => {
       setIsLoading(false);
     }
   };
+  // Функция для преобразования масок в правильный формат
+  const formatMasksForApi = (masks: any[]): Array<Array<Array<number>>> => {
+    if (!Array.isArray(masks)) {
+      return [];
+    }
+    
+    return masks.map((mask): Array<Array<number>> => {
+      // Если маска не массив
+      if (!Array.isArray(mask)) {
+        return [];
+      }
+      
+      // Если маска уже в формате [[x1,y1], [x2,y2], ...], возвращаем её
+      if (mask.length > 0 && Array.isArray(mask[0])) {
+        // Убедимся, что все элементы это числа
+        return mask.map(point => 
+          Array.isArray(point) && point.length >= 2 
+            ? [Number(point[0]), Number(point[1])] 
+            : [0, 0]
+        );
+      }
+      
+      // Если маска в формате [x1,y1,x2,y2,...], преобразуем в [[x1,y1], [x2,y2], ...]
+      const formattedMask: Array<Array<number>> = [];
+      for (let i = 0; i < mask.length; i += 2) {
+        if (i + 1 < mask.length) {
+          formattedMask.push([Number(mask[i]), Number(mask[i + 1])]);
+        }
+      }
+      return formattedMask;
+    });
+  };
 
   const handleSaveAnnotations = async (updatedAnnotations: any) => {
     if (currentFileId) {
+      // Валидация payload
+      if (
+        !updatedAnnotations.file_id ||
+        typeof updatedAnnotations.file_id !== "string"
+      ) {
+        console.error(
+          "file_id отсутствует или не строка!",
+          updatedAnnotations.file_id
+        );
+        setError("Некорректный file_id");
+        return;
+      }
+      if (!Array.isArray(updatedAnnotations.masks)) {
+        console.error("masks не массив!", updatedAnnotations.masks);
+        setError("Некорректные маски");
+        return;
+      }
+      if (!Array.isArray(updatedAnnotations.boxes)) {
+        console.error("boxes не массив!", updatedAnnotations.boxes);
+        setError("Некорректные боксы");
+        return;
+      }
+      if (!Array.isArray(updatedAnnotations.classes)) {
+        console.error("classes не массив!", updatedAnnotations.classes);
+        setError("Некорректные классы");
+        return;
+      }
+      if (!Array.isArray(updatedAnnotations.num_classes)) {
+        console.error("num_classes не массив!", updatedAnnotations.num_classes);
+        setError("Некорректные индексы классов");
+        return;
+      }
       try {
-        console.log("Saving annotations:", updatedAnnotations);
+        // Функция для преобразования масок в правильный формат
+        const formatMasks = (masks: any[]): Array<Array<Array<number>>> => {
+          if (!Array.isArray(masks)) return [];
+          
+          return masks.map((mask): Array<Array<number>> => {
+            if (!Array.isArray(mask)) return [];
+            
+            // Если маска уже в формате [[x1,y1], [x2,y2], ...], возвращаем её
+            if (mask.length > 0 && Array.isArray(mask[0])) return mask;
+            
+            // Преобразуем [x1,y1,x2,y2,...] в [[x1,y1], [x2,y2], ...]
+            const formattedMask: Array<Array<number>> = [];
+            for (let i = 0; i < mask.length; i += 2) {
+              if (i + 1 < mask.length) {
+                formattedMask.push([Number(mask[i]), Number(mask[i + 1])]);
+              }
+            }
+            return formattedMask;
+          });
+        };
+        
+        // Создаем копию объекта, чтобы избежать мутаций
+        const payloadToSend = {
+          ...updatedAnnotations,
+          // Преобразуем маски в нужный формат
+          masks: formatMasks(updatedAnnotations.masks)
+        };
+        
 
-        // Сначала отправляем обновленные аннотации на сервер
+        
+        // Отправляем обновленные аннотации на сервер
         const response = await axios.patch(
           `${MODEL_URL}/update_predict`,
-          updatedAnnotations,
+          payloadToSend,
           {
             withCredentials: true,
             headers: {
@@ -316,30 +408,39 @@ const Dashboard: React.FC = () => {
           }
         );
 
-        console.log("Server response:", response.data);
-
         if (response.data) {
-          // Форматируем данные для отображения
+          // Сохраняем успешный результат
           const formattedResult = {
             ...response.data,
             file_id: currentFileId,
-            user_id: response.data.user_id || "",
-            created_at: response.data.created_at || new Date().toISOString(),
+            user_id: response.data.user_id || analysisResult.user_id || "",
+            created_at: response.data.created_at || analysisResult.created_at || new Date().toISOString(),
             updated_at: response.data.updated_at || new Date().toISOString(),
-            path_to_report: response.data.path_to_report || "",
+            path_to_report: response.data.path_to_report || analysisResult.path_to_report || "",
+            masks: payloadToSend.masks,
+            boxes: payloadToSend.boxes,
+            classes: payloadToSend.classes,
+            num_classes: payloadToSend.num_classes,
+            confs: analysisResult.confs || [],
+            message: "Разметка успешно обновлена"
           };
 
-          console.log("Formatted result:", formattedResult);
+
           setAnalysisResult(formattedResult);
+          setError(null);
 
           // Перерисовываем канвас с новыми данными
           if (preview && Object.keys(classColors).length > 0) {
             drawPointsOnCanvas();
           }
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error("Error updating analysis results:", err);
-        setError("Ошибка при обновлении результатов анализа");
+        if (err.response && err.response.data) {
+          setError(`Ошибка при обновлении результатов анализа: ${err.response.data.message || err.message}`);
+        } else {
+          setError(`Ошибка при обновлении результатов анализа: ${err.message || 'Неизвестная ошибка'}`);
+        }
       }
     }
   };

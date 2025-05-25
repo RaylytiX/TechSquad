@@ -206,10 +206,9 @@ const Profile: React.FC = () => {
       showMasks &&
       selectedHistory.masks &&
       selectedHistory.masks.length > 0
-    ) {
-      console.log("Drawing masks, count:", selectedHistory.masks.length);
-      selectedHistory.masks.forEach((mask: number[][], index: number) => {
+    ) {      selectedHistory.masks.forEach((mask: any, index: number) => {
         if (
+          mask &&
           mask.length > 0 &&
           selectedHistory.classes &&
           index < selectedHistory.classes.length
@@ -224,10 +223,33 @@ const Profile: React.FC = () => {
           const rgbaBorder = `hsla(${hue}, 70%, 50%, 0.8)`;
 
           ctx.beginPath();
-          ctx.moveTo(mask[0][0], mask[0][1]);
-
-          for (let i = 1; i < mask.length; i++) {
-            ctx.lineTo(mask[i][0], mask[i][1]);
+          
+          // Проверяем формат маски и обрабатываем все возможные варианты
+          try {
+            // Если маска в формате [[x1,y1], [x2,y2], ...]
+            if (Array.isArray(mask[0])) {
+              if (mask[0].length >= 2) {
+                ctx.moveTo(Number(mask[0][0]), Number(mask[0][1]));
+                
+                for (let i = 1; i < mask.length; i++) {
+                  if (Array.isArray(mask[i]) && mask[i].length >= 2) {
+                    ctx.lineTo(Number(mask[i][0]), Number(mask[i][1]));
+                  }
+                }
+              }
+            } 
+            // Если маска в формате [x1,y1,x2,y2,...]
+            else if (typeof mask[0] === 'number') {
+              ctx.moveTo(Number(mask[0]), Number(mask[1]));
+              
+              for (let i = 2; i < mask.length; i += 2) {
+                if (i+1 < mask.length) {
+                  ctx.lineTo(Number(mask[i]), Number(mask[i + 1]));
+                }
+              }
+            }
+          } catch (error) {
+            console.error("Ошибка при отрисовке маски в профиле:", error);
           }
           ctx.closePath();
           ctx.fillStyle = rgbaFill;
